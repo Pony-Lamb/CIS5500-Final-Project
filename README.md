@@ -53,5 +53,12 @@ RDS Setup and Data Upload - Yongqi Zhong
 
 Query Writing - Yongyin Yang, Shutong Jiang  
 
-
+Credentials:
+{
+  "rds_host": "database-1.cfcenfnbcvhy.us-east-1.rds.amazonaws.com",
+  "rds_port": "5432",
+  "rds_user": "cis5500",
+  "rds_password": "kUWDP0g66ONQPkaiMKMo",
+  "rds_db": "postgres"
+}
 
