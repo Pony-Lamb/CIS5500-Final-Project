@@ -25,6 +25,8 @@ making it easy to recreate restaurant meals at home.
 users to follow food influencers, participate in recipe replication discussions, and share 
 cooking experiences. 
 
+# Directory Description
+● Milestones： Contains the files that need to be completed and submitted for each milestone.
 
 # Milestone 1 - Project Proposal (Mar. 2)
 Project Overview - Yongyin Yang  
