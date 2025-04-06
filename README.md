@@ -1,5 +1,10 @@
 # CIS5500-Final-Project
-YumLog is an AI-driven restaurant review and food discovery platform designed to enhance the dining experience by enabling users to search for restaurants, receive personalized meal recommendations, submit reviews, and access detailed recipes. 
+YumLog is an AI-driven restaurant review and food discovery platform designed to enhance the
+dining experience by enabling users to search for restaurants, receive personalized meal
+recommendations, submit reviews, and access detailed recipes. Through the integration of
+advanced recommendation algorithms, comprehensive restaurant databases, and interactive
+social engagement features, the platform offers a data-driven, user-centric, and seamless
+approach to culinary exploration.
 
 # Milestone 1 - Project Proposal (Mar. 2)
 Project Overview - Yongyin Yang  
