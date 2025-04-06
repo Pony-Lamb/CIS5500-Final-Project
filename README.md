@@ -6,8 +6,11 @@ YumLog is an AI-driven restaurant review and food discovery platform designed to
 # Milestone 2 - Project Outline (Mar. 23)
 
 # Milestone 3 - Database Population/SQL Queries (Apr. 6)
-Data Preprocessing - Jiayang Chen
-RDS Setup and Data Upload - Yongqi Zhong
-Query Writin - Yongyin Yang, Shutong Jiang
+Data Preprocessing - Jiayang Chen  
+
+RDS Setup and Data Upload - Yongqi Zhong  
+
+Query Writin - Yongyin Yang, Shutong Jiang  
+
 
 
