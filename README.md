@@ -6,6 +6,22 @@ advanced recommendation algorithms, comprehensive restaurant databases, and inte
 social engagement features, the platform offers a data-driven, user-centric, and seamless
 approach to culinary exploration.
 
+Core Functionalities 
+
+● Restaurant Discovery & Recommendations – Enables users to search for restaurants 
+based on location, cuisine, dietary preferences, and pricing tiers. 
+● User Reviews & Ratings – Allows users to write restaurant reviews, rate their dining 
+experiences, and upload food photos to share real experiences. 
+● AI-Powered Meal Suggestions – Generates personalized restaurant and dish 
+recommendations based on user preferences, dining history, and ratings. 
+● Recipe Retrieval Feature – Enables users to find detailed recipes and cooking 
+instructions by matching dish names from restaurant menus to a recipe database, 
+making it easy to recreate restaurant meals at home. 
+● Community Engagement & Social Features – Facilitates social interaction by allowing 
+users to follow food influencers, participate in recipe replication discussions, and share 
+cooking experiences. 
+
+
 # Milestone 1 - Project Proposal (Mar. 2)
 Project Overview - Yongyin Yang  
 
