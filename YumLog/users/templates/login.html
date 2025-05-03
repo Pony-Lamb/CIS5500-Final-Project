@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <form action="/users/index/" method="post">
+        {% csrf_token %}
+        <p>
+            <label>Username:</label>
+            <input name="user" />
+        </p>
+        <p>
+            <label>Password:</label>
+            <input name="pwd" type="password" />
+        </p>
+        <input type="submit" value="Submit" />
+    </form>
+</body>
+</html>
+
+ 
