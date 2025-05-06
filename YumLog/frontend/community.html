@@ -1,0 +1,163 @@
+<!-- File: community.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YumLog — Community</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ==== Community Page Overrides ==== */
+    .community-page {
+      margin: 2rem auto;
+      max-width: 800px;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .review-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .review-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+    }
+    .review-card p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .fav-icon {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #333;
+    }
+    .poll-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+    .poll-card h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    .poll-question {
+      margin: 0.5rem 0 1rem;
+      font-size: 1rem;
+      color: #333;
+    }
+    .poll-option {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      margin: 2rem 0 1rem;
+      color: #222;
+    }
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .badge {
+      background: #f0f4f8;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV (dual‐nav) -->
+  <nav>
+    <div class="container">
+      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
+
+      <!-- Guest nav -->
+      <ul id="nav-guest">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html">Discover</a></li>
+        <li><a href="community.html" class="active">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li class="profile"><a href="login.html">Log In</a></li>
+        <li><a class="btn" href="signup.html">Sign Up</a></li>
+      </ul>
+
+      <!-- Authenticated nav -->
+      <ul id="nav-auth" style="display: none;">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html">Discover</a></li>
+        <li><a href="community.html" class="active">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li class="logout">
+          <a href="logout.html" class="btn">Log Out</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="container community-page">
+
+    <h1>Community Feed</h1>
+
+    <!-- Review cards -->
+    <div class="review-card">
+      <h3>@jiayang</h3>
+      <p><strong>Spicy Ramen House:</strong> This ramen hit all the right notes</p>
+      <span class="fav-icon">♡</span>
+    </div>
+
+    <div class="review-card">
+      <h3>@foodlover2</h3>
+      <p><strong>Spicy Ramen House:</strong> Flavor bomb and perfect spice balance!</p>
+      <span class="fav-icon">♡</span>
+    </div>
+
+    <!-- Community Poll -->
+    <div class="poll-card">
+      <h2>Community Poll</h2>
+      <p class="poll-question">What’s the best sushi spot in NYC?</p>
+      <button class="poll-option">Sushi Nakazawa</button>
+      <button class="poll-option">Sushi Yasuda</button>
+      <button class="poll-option">Sugarfish</button>
+    </div>
+
+    <!-- Explore Topics -->
+    <h2 class="section-title">Explore Restaurant Topics</h2>
+    <div class="badges">
+      <div class="badge">#Ramen Spots</div>
+      <div class="badge">#Cheap Eats</div>
+      <div class="badge">#Top Rated</div>
+    </div>
+
+  </main>
+
+  <footer>
+    &copy; 2025 YumLog. All rights reserved.
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

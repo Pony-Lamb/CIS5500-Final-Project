@@ -1,0 +1,198 @@
+<!-- File: discovery.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YumLog — Discover</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ==== Map‐View Layout ==== */
+    .map-view {
+      display: none;
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .map-sidebar {
+      width: 300px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .map-sidebar h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .nearby-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nearby-list li {
+      margin-bottom: 1rem;
+    }
+    .map-container {
+      flex: 1;
+      background: #eaedf1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 1.1rem;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: #3182ce;
+      cursor: pointer;
+      margin-top: 1rem;
+      padding: 0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV (dual-nav as before) -->
+  <nav>
+    <div class="container">
+      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
+      <ul id="nav-guest">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html" class="active">Discover</a></li>
+        <li><a href="community.html">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li class="profile"><a href="login.html">Log In</a></li>
+        <li><a class="btn" href="signup.html">Sign Up</a></li>
+      </ul>
+      <ul id="nav-auth" style="display:none;">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html" class="active">Discover</a></li>
+        <li><a href="community.html">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li class="logout">
+          <a href="logout.html" class="btn">Log Out</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="container">
+
+    <!-- ─── LIST VIEWS ──────────────────────────────────── -->
+    <section id="guest-list">
+      <!-- search + Map View -->
+      <div class="search-bar full-width">
+        <input type="text" placeholder="Search nearby restaurants…" />
+        <button class="btn" data-action="show-map">Map View</button>
+      </div>
+      <!-- tabs + filters (as before) -->
+      <div class="tabs">
+        <button class="btn tab-btn active">Filters</button>
+        <button class="btn tab-btn">Top Rated</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn">All Prices</button>
+        <button class="filter-btn">All Category</button>
+        <button class="filter-btn">All Cuisines</button>
+        <button class="filter-btn">All Tags</button>
+        <button class="filter-btn">Distance</button>
+      </div>
+      <!-- results sample -->
+      <div class="results">
+        <div class="card result-card">
+          <div class="card-body">
+            <h3>Spicy Ramen House</h3>
+            <p>Chinatown · $$ · Noodles</p>
+            <p class="subtext">Gluten-free · Vegan-friendly</p>
+            <div class="rating">4.6 (112 reviews)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="auth-list" style="display:none;">
+      <div class="search-bar full-width">
+        <input type="text" placeholder="Search nearby restaurants…" />
+        <button class="btn">Filters</button>
+        <button class="btn" data-action="show-map">Map View</button>
+      </div>
+      <div class="tabs">
+        <button class="btn tab-btn active">Recent</button>
+        <button class="btn tab-btn">Top Rated</button>
+        <button class="btn tab-btn">AI Suggested</button>
+      </div>
+      <p class="hint">Recommendations are based on your taste history</p>
+      <div class="results">
+        <div class="card result-card">
+          <div class="card-body">
+            <h3>Spicy Ramen House</h3>
+            <p>Chinatown · $$ · Noodles</p>
+            <p class="subtext">Gluten-free · Vegan-friendly</p>
+            <div class="rating">4.6 (112 reviews)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── MAP VIEWS ───────────────────────────────────── -->
+    <section id="guest-map" class="map-view">
+      <div class="map-sidebar">
+        <h2>Nearby Restaurants</h2>
+        <ul class="nearby-list">
+          <li>
+            <strong>Sushi Hayato</strong><br>
+            4.8 · Tokyo Town
+          </li>
+          <li>
+            <strong>Beef Bowl House</strong><br>
+            4.6 · Midtown LA
+          </li>
+          <li>
+            <strong>Noodle Nest</strong><br>
+            4.7 · SF Japantown
+          </li>
+        </ul>
+        <button class="back-btn" data-action="back-to-list">&lt; Back</button>
+      </div>
+      <div class="map-container">Map loading…</div>
+    </section>
+
+    <section id="auth-map" class="map-view">
+      <div class="map-sidebar">
+        <h2>Nearby Restaurants</h2>
+        <ul class="nearby-list">
+          <li>
+            <strong>Sushi Hayato</strong><br>
+            4.8 · Tokyo Town
+          </li>
+          <li>
+            <strong>Beef Bowl House</strong><br>
+            4.6 · Midtown LA
+          </li>
+          <li>
+            <strong>Noodle Nest</strong><br>
+            4.7 · SF Japantown
+          </li>
+        </ul>
+        <button class="back-btn" data-action="back-to-list">&lt; Back</button>
+      </div>
+      <div class="map-container">Map loading…</div>
+    </section>
+
+  </main>
+
+  <footer>
+    &copy; 2025 YumLog. All rights reserved.
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
