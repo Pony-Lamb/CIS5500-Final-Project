@@ -1,50 +1,54 @@
 from django.db import models
 
-class User(models.Model):
+class users(models.Model):
     user_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)  # 昵称
     email = models.EmailField(unique=True)  # 登录唯一凭证
     password = models.CharField(max_length=128)  # 存储哈希值
     profile = models.TextField(blank=True)
-    tags = models.CharField(max_length=100, blank=True)
+    tags = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.email})"
 
 
-class Restaurant(models.Model):
-    restaurant_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
-    price_range = models.CharField(max_length=10)
-    score = models.FloatField(default=0.0)
-    address = models.CharField(max_length=200)
-    zip_code = models.CharField(max_length=10)
-    longitude = models.FloatField(null=True, blank=True)
-    latitude = models.FloatField(null=True, blank=True)
+class restaurants(models.Model):
+    restaurant_id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    zip_code = models.CharField(max_length=20)
+    lat = models.FloatField()
+    lng = models.FloatField()
+    score = models.FloatField()
+    category = models.TextField()
+    price_range = models.CharField(max_length=3)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        db_table = 'restaurants'
+       
 
-
-class Review(models.Model):
+class reviews(models.Model):
     review_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(users, on_delete=models.CASCADE, related_name='reviews')
+    restaurant = models.ForeignKey(restaurants, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
     likes = models.IntegerField(default=0)
     stars = models.IntegerField()
     date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.name} - {self.restaurant.name}"
+        return f"{self.user.name} - {self.restaurant.name}"  # ✅ 修改了这里
+
+    class Meta:
+        db_table = 'reviews'   # ✅ 改成你数据库真实的表名
+        
 
 
 class MenuDish(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    restaurant = models.OneToOneField(Restaurant, on_delete=models.CASCADE, related_name='menu')
+    restaurant = models.OneToOneField(restaurants, on_delete=models.CASCADE, related_name='menu')
 
     def __str__(self):
         return self.name

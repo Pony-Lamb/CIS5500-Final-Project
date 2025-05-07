@@ -1,20 +1,22 @@
-{% load static %}  <!-- ✅ 改动: 引入 Django static 模板标签 -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Sign Up</title>
-
-  <!-- ✅ 改动: 使用 Django 的静态文件路径 -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-
   <style>
-    /* ===== Auth Page Styles ===== */
-    body { background: #f2f4f6; margin: 0; font-family: Arial, sans-serif; }
+    body {
+      background: #f2f4f6;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
     .auth-container {
       min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .auth-card {
       background: #fff;
@@ -40,7 +42,9 @@
       margin: 0.5rem auto 0;
       border-radius: 2px;
     }
-    .form-group { margin-bottom: 1rem; }
+    .form-group {
+      margin-bottom: 1rem;
+    }
     .form-group label {
       display: block;
       font-size: 0.9rem;
@@ -65,17 +69,6 @@
       cursor: pointer;
       margin: 1rem 0;
     }
-    .btn-google {
-      width: 100%;
-      padding: 0.5rem;
-      background: #fff;
-      border: 1px solid #cbd5e0;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
     .auth-footer {
       text-align: center;
       font-size: 0.9rem;
@@ -86,25 +79,39 @@
       text-decoration: none;
       font-weight: 500;
     }
+
+    /* 标签样式 */
+    .tag {
+      display: inline-block;
+      margin: 4px 6px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      background-color: #f7fafc;
+      color: #4a5568;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    .tag.selected {
+      font-weight: bold;
+      background-color: #ed8936;
+      color: #fff;
+      border-color: #ed8936;
+    }
   </style>
 </head>
 <body>
   <div class="auth-container">
     <div class="auth-card">
-
-      <!-- ✅ 改动: 使用 Django 的 URL 反向解析 -->
-      <a href="{% url 'index' %}" class="auth-back">‹ Back</a>
-
+      <a href="{% url 'public_index' %}" class="auth-back">‹ Back</a>
       <h1>Create Your YumLog Account</h1>
-
-      <!-- ✅ 改动: 添加 POST 方法、action 提交到 Django 注册路由 -->
       <form method="post" action="{% url 'register' %}" id="signup-form">
-        {% csrf_token %}  <!-- ✅ 改动: 添加 CSRF 令牌 -->
-
+        {% csrf_token %}
         <div class="form-group">
           <label for="username">Username</label>
           <input id="username" name="username" type="text" placeholder="@yourhandle" required />
-          {% if errors.username %}  <!-- ✅ 改动: 显示后端返回的错误信息 -->
+          {% if errors.username %}
             <p style="color: red;">{{ errors.username.0 }}</p>
           {% endif %}
         </div>
@@ -112,7 +119,7 @@
         <div class="form-group">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" placeholder="you@example.com" required />
-          {% if errors.email %}  <!-- ✅ 改动 -->
+          {% if errors.email %}
             <p style="color: red;">{{ errors.email.0 }}</p>
           {% endif %}
         </div>
@@ -120,23 +127,55 @@
         <div class="form-group">
           <label for="password">Password</label>
           <input id="password" name="password" type="password" placeholder="••••••••" required />
-          {% if errors.password %}  <!-- ✅ 改动 -->
+          {% if errors.password %}
             <p style="color: red;">{{ errors.password.0 }}</p>
           {% endif %}
         </div>
+
+        <!-- 标签选择 -->
+        <div class="form-group">
+          <label>Select your interests:</label>
+          <div id="tag-container">
+            <span class="tag" data-value="American">American</span>
+            <span class="tag" data-value="Burgers">Burgers</span>
+            <span class="tag" data-value="Fast Food">Fast Food</span>
+            <span class="tag" data-value="Sandwiches">Sandwiches</span>
+            <span class="tag" data-value="Mexican">Mexican</span>
+            <span class="tag" data-value="Italian">Italian</span>
+            <span class="tag" data-value="Latin American">Latin American</span>
+            <span class="tag" data-value="New Mexican">New Mexican</span>
+            <span class="tag" data-value="Burritos">Burritos</span>
+            <span class="tag" data-value="Pizza">Pizza</span>
+          </div>
+          <input type="hidden" name="tags" id="selected-tags" value="">
+        </div>
+
 
         <button type="submit" class="btn-primary">Sign Up</button>
       </form>
 
       <div class="auth-footer">
         Already have an account?
-        <!-- ✅ 改动: 使用 Django 的 login 页面反向 URL -->
         <a href="{% url 'login' %}">Log in</a>
       </div>
     </div>
   </div>
 
-  <!-- ✅ 改动: 删除了原本阻止表单提交的 JavaScript -->
+  <script>
+    const tags = document.querySelectorAll('.tag');
+    const hiddenInput = document.getElementById('selected-tags');
+
+    tags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        tag.classList.toggle('selected');
+        const selected = Array.from(tags)
+          .filter(t => t.classList.contains('selected'))
+          .map(t => t.dataset.value);
+        hiddenInput.value = selected.join(',');
+      });
+    });
+  </script>
 </body>
 </html>
+
 

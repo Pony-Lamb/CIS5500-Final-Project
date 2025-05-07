@@ -1,16 +1,12 @@
 from rest_framework import serializers
 import re
-from .models import User  
+from .models import users
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=20)
     email = serializers.EmailField()
     password = serializers.CharField(min_length=6)
-    tags = serializers.ListField(
-        child=serializers.CharField(max_length=30),
-        required=False,
-        allow_empty=True
-    )
+    tags = serializers.CharField(required=False, allow_blank=True)
 
     def validate_username(self, value):
         import re

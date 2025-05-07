@@ -1,0 +1,132 @@
+<!-- File: recipe.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YumLog — Recipe Match</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ==== Recipe Page Overrides ==== */
+    .recipe-page {
+      margin: 2rem auto;
+      max-width: 800px;
+      line-height: 1.6;
+    }
+    .recipe-page h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      margin: 2rem 0 1rem;
+      color: #222;
+    }
+    .recipe-page ul,
+    .recipe-page ol {
+      margin: 0 0 1rem 1.25rem;
+    }
+    .recipe-page ul li,
+    .recipe-page ol li {
+      margin-bottom: 0.5rem;
+    }
+    .btn-outline {
+      display: inline-block;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      margin: 1rem 0;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1rem;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
+
+      <!-- Guest nav -->
+      <ul id="nav-guest">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html">Discover</a></li>
+        <li><a href="community.html">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li class="profile"><a href="login.html">Log In</a></li>
+        <li><a class="btn" href="signup.html">Sign Up</a></li>
+      </ul>
+
+      <!-- Auth nav -->
+      <ul id="nav-auth" style="display: none;">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="discovery.html">Discover</a></li>
+        <li><a href="community.html">Community</a></li>
+        <li><a href="recommendations.html">Smart Recs</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li class="logout">
+          <a href="logout.html" class="btn">Log Out</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="container recipe-page">
+    <h1>Spicy Tonkotsu Ramen</h1>
+
+    <h2 class="section-title">Matched Recipes</h2>
+    <ul>
+      <li>Authentic Pork Bone Ramen</li>
+      <li>Spicy Miso Broth with Noodles</li>
+      <li>Homestyle Ramen Bowl</li>
+    </ul>
+
+    <h2 class="section-title">Similar Restaurant Dishes</h2>
+    <ul>
+      <li><a href="restaurant.html">Spicy Ramen House</a></li>
+      <li>Noodle Nest</li>
+    </ul>
+
+    <h2 class="section-title">Ingredients</h2>
+    <ul>
+      <li>2 cups pork bone broth</li>
+      <li>1 tsp sesame oil</li>
+      <li>2 tbsp miso paste</li>
+      <li>Ramen noodles</li>
+      <li>Chashu pork</li>
+      <li>Green onions</li>
+    </ul>
+    <p>Simmer pork bone broth with sesame oil and miso paste. Boil noodles, then combine and top with chashu pork and green onions.</p>
+
+    <h2 class="section-title">Directions</h2>
+    <ol>
+      <li>Simmer pork bone broth with sesame oil and miso paste over medium heat.</li>
+      <li>Boil ramen noodles according to package instructions.</li>
+      <li>Prepare toppings: slice chashu pork, chop green onions.</li>
+      <li>Combine broth and noodles in a bowl.</li>
+      <li>Top with chashu pork, green onions, and serve hot.</li>
+    </ol>
+
+    <a class="btn-outline" href="#">Generate Shopping List</a><br/>
+    <a class="back-link" href="javascript:history.back()">‹ Back</a>
+  </main>
+
+  <footer>
+    &copy; 2025 YumLog. All rights reserved.
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

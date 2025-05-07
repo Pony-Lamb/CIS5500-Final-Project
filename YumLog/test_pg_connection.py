@@ -12,11 +12,12 @@ try:
 
     # 🔸 先获取游标，再执行 SQL
     cur = conn.cursor()
-    cur.execute("SELECT * FROM restaurants;")  # 示例：查 Django 用户表
-    rows = cur.fetchall()
+    cur.execute("SELECT COUNT(*) FROM restaurants")
+    row = cur.fetchone()
+    print(f"数量：{row[0]}")
 
-    for row in rows:
-        print(row)
+    # for row in rows:
+    #     print(row)
 
     # 关闭游标和连接
     cur.close()

@@ -1,0 +1,69 @@
+{# public_index.html - 游客首页 #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YumLog — Home</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a class="logo"><img src="{% static 'img/logo.png' %}" alt="YumLog logo" /></a>
+      <ul id="nav-guest">
+        <li><a href="{% url 'public_index' %}" class="active">Home</a></li>
+        <li><a href="{% url 'discovery' %}">Discover</a></li>
+        <li><a href="{% url 'community' %}">Community</a></li>
+        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li>
+        <li class="profile"><a href="{% url 'login' %}">Log In</a></li>
+        <li><a class="btn" href="{% url 'signup' %}">Sign Up</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container discover-page">
+    <h1>Discover Delicious</h1>
+    <div class="search-bar full-width">
+      <input type="text" placeholder="Search restaurants or dishes..." />
+    </div>
+
+
+
+    <h2 class="section-title">Trending Now</h2>
+    <div class="grid grid-3">
+      {% for restaurants in trending_restaurants %}
+        <div class="card"><div class="card-body">
+          <h3>{{ restaurants.name }}</h3>
+          <p>{{ restaurants.location }}</p>
+          <p>{{ restaurants.score }} ({{ restaurants.review_count }} reviews)</p>
+        </div></div>
+      {% endfor %}
+    </div>
+    
+
+    <h2 class="section-title">Top Reviews from Foodies</h2>
+    <div class="review-card">
+      <p>“Incredible sushi, cozy vibe!”</p>
+      <div class="rating">— @sushilover</div>
+    </div>
+
+    <h2 class="section-title">Because You Liked Ramen House...</h2>
+    <div class="grid grid-2">
+      <div class="card"><div class="card-body">
+        <h3>Udon Palace</h3><p>Nearby · Japanese · $$</p>
+      </div></div>
+      <div class="card"><div class="card-body">
+        <h3>Spicy Bowl</h3><p>Nearby · Ramen · Spicy</p>
+      </div></div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 YumLog. All rights reserved.
+  </footer>
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
+

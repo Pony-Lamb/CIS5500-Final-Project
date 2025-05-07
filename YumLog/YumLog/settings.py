@@ -88,13 +88,14 @@ WSGI_APPLICATION = "YumLog.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'yumlog',
         'USER': 'cis5500',
         'PASSWORD': 'kUWDP0g66ONQPkaiMKMo',
         'HOST': 'database-1.cfcenfnbcvhy.us-east-1.rds.amazonaws.com',  # RDS 端点或 EC2 IP
         'PORT': '5432',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -131,6 +132,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
