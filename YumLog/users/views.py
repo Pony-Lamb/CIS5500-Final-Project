@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
-from .models import users, restaurants, MenuDish, reviews, Match, Recipe
+from .models import users, restaurants, menudishes, reviews, Match, recipes
 from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import authenticate, login
+from django.db.models import Q
 
 # # 注册视图
 # def register_view(request):
@@ -154,22 +155,45 @@ def home_view(request):
         restaurant = restaurant.filter(category__in=selected_tags)
 
     # 热门推荐：评分最高前 3 个
-    trending_restaurants = restaurants.objects.order_by('-score')[:3]
- 
+    trending_restaurants = restaurants.objects.order_by('-score')[:20]
 
     # # 精选评论：点赞数最多
     top_review = reviews.objects.order_by('-likes').first()
 
-    # 个性化推荐逻辑：根据用户 tag 推荐类别匹配的餐厅
+    # 个性化推荐逻辑：根据用户 tags 推荐匹配类别的餐厅
+    
     recommended_restaurants = []
-    if request.user.is_authenticated:
+    print("🚀 已进入 dashboard 视图")
+
+    if request.session.get('is_logged_in'):
         try:
-            user = users.objects.get(id=request.user.id)
+            email = request.session.get('user_email')
+            user = users.objects.get(email=email)
+            print("✅ 找到当前用户:", user.name)
+
             if user.tags:
-                tag_list = [tag.strip() for tag in user.tags.split(',') if tag.strip()]
-                recommended_restaurants = restaurants.objects.filter(category__in=tag_list).exclude(name="Ramen House")[:2]
+                print("✅ 用户 tags 原始字符串:", user.tags)
+
+                tag_list = [tag.strip().lower() for tag in user.tags.split(',') if tag.strip()]
+                print("✅ 清洗后的标签列表:", tag_list)
+
+                # 构造 Q 查询：模糊匹配任意标签
+                query = Q()
+                for tag in tag_list:
+                    print(f"🔍 匹配标签: {tag}")
+                    query |= Q(category__icontains=tag)
+
+                matched = restaurants.objects.filter(query).distinct()
+                print(f"✅ 匹配到 {matched.count()} 条推荐")
+
+                recommended_restaurants = matched[:5]
+
         except users.DoesNotExist:
-            pass
+            print("❌ 用户不存在")
+
+
+
+
 
     context = {
         'restaurants': restaurant,
@@ -177,7 +201,7 @@ def home_view(request):
         'selected_tags': selected_tags,
         'trending': trending_restaurants,
         'top_review': top_review,
-        'recommended': recommended_restaurants
+        'recommended_restaurants': recommended_restaurants
     }
 
     return render(request, 'private_index.html', context)
@@ -187,26 +211,34 @@ def restaurant_detail_view(request, restaurant_id):
     # 获取餐厅对象
     restaurant = get_object_or_404(restaurants, restaurant_id=restaurant_id)
 
-    # 获取菜单菜品（OneToOne 改为 ForeignKey 时可返回多个）
-    menu_dishes = MenuDish.objects.filter(restaurant=restaurant)
+    # 获取菜单菜品
+    menu_dishes = menudishes.objects.filter(restaurant=restaurant)
 
-    # 获取该餐厅的所有评论（含点赞）
-    review = reviews.objects.filter(restaurant=restaurant).order_by('-likes')
+    # 获取该餐厅的所有评论（按点赞数排序）
+    review_list = reviews.objects.filter(restaurant=restaurant).order_by('-likes')
 
-    # 获取菜品与食谱的匹配（Match 映射）
-    matched_recipes = {
-        match.menudish.name: match.recipe
-        for match in Match.objects.filter(menudish__restaurant=restaurant)
-    }
+    # 获取评论数量
+    review_count = review_list.count()
+
+    # 获取菜品与食谱匹配字典
+    # matched_recipes = {
+    #     match.menudish.name: match.recipe
+    #     for match in Match.objects.filter(menudish__restaurant=restaurant)
+    # }
+
+    # 预处理标签（用作前端标签展示）
+    category_tags = restaurant.category.split(',') if restaurant.category else []
 
     context = {
         'restaurant': restaurant,
         'menu_dishes': menu_dishes,
-        'review': review,
-        'matched_recipes': matched_recipes
+        'review': review_list,
+        'review_count': review_count,
+        # 'matched_recipes': matched_recipes,
+        'category_tags': category_tags,  # 前端可循环渲染
     }
 
-    return render(request, 'restaurant_detail.html', context)
+    return render(request, 'restaurant.html', context)
 
 def discovery_view(request):
     return render(request, 'discovery.html')
@@ -215,10 +247,16 @@ def recommendations_view(request):
     return render(request, 'recommendations.html')
 
 
+
     # 社区页视图（Community Feed + Poll）
 def community_view(request):
     # 获取最新的 10 条评论作为社区动态
-    latest_reviews = reviews.objects.select_related('user', 'restaurant').order_by('-date')[:10]
+#     latest_reviews = reviews.objects.select_related('user', 'restaurant').order_by('-date').values(
+#     'user__name', 'restaurant__name', 'text'
+# )[:10]
+    latest_reviews = reviews.objects.order_by('-date').values_list('text', flat=True)[:5]
+
+
 
     # 模拟投票选项（可改为数据库模型）
     poll_question = "What's the best sushi spot in NYC?"
@@ -251,10 +289,10 @@ def restaurant_map_view(request, restaurant_id):
 
 def recipe_detail_view(request, recipe_id):
     # 获取当前 Recipe 对象
-    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    recipe = get_object_or_404(recipes, recipe_id=recipe_id)
 
     # 获取其它推荐 Recipe（Matched Recipes）
-    matched_recipes = Recipe.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
+    matched_recipes = recipes.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
 
     # 获取当前 Recipe 匹配到的所有 MenuDish（即：在哪些餐厅有类似的菜）
     matched_menu_dishes = Match.objects.filter(recipe=recipe)

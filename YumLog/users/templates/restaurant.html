@@ -1,3 +1,4 @@
+{% load static %}
 <!-- File: restaurant.html -->
 <!DOCTYPE html>
 <html lang="en">
@@ -5,7 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Restaurant</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <style>
     /* ===== Restaurant Detail Overrides ===== */
     .restaurant-header {
@@ -78,28 +79,14 @@
   <!-- NAV -->
   <nav>
     <div class="container">
-      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
-
-      <!-- Guest nav -->
-      <ul id="nav-guest">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li class="profile"><a href="login.html">Log In</a></li>
-        <li><a class="btn" href="signup.html">Sign Up</a></li>
-      </ul>
-
-      <!-- Auth nav -->
-      <ul id="nav-auth" style="display:none;">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li><a href="profile.html">Profile</a></li>
-        <li class="logout">
-          <a href="logout.html" class="btn">Log Out</a>
-        </li>
+      <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
+      <ul id="nav-auth">
+        <li><a href="{% url 'private_index' %}" class="active">Home</a></li>
+        <li><a href="{% url 'discovery' %}">Discover</a></li>
+        <li><a href="{% url 'community' %}">Community</a></li>
+        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li>
+        <li><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
     </div>
   </nav>
@@ -109,21 +96,25 @@
 
     <!-- Header Image + Favorite -->
     <div class="restaurant-header">
-      <img src="https://via.placeholder.com/1200x300" alt="Restaurant Picture" />
+      <img src="https://via.placeholder.com/1200x300" alt="{{ restaurant.name }} Picture" />
       <span class="fav-icon">♡</span>
     </div>
 
     <!-- Info & Tags -->
     <div class="restaurant-info">
-      <h1>Spicy Ramen House</h1>
-      <p>123 Ramen Street, Foodie City</p>
-      <p>4.6 (112 reviews)</p>
-      <div class="tag-list">
-        <div class="tag">Spicy</div>
-        <div class="tag">Great Value</div>
-        <div class="tag">Good for Groups</div>
-      </div>
+      <h1>{{ restaurant.name }}</h1>
+      <p>{{ restaurant.address }}</p>
+      <p>{{ restaurant.score }} ({{ review_count }} reviews)</p>
+    
+      {% if category_tags %}
+        <div class="tag-list">
+          {% for tag in category_tags %}
+            <div class="tag">{{ tag }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
+    
 
     <!-- Menu -->
     <div class="menu-section">
@@ -143,20 +134,23 @@
       </div>
     </div>
 
-    <!-- User Reviews -->
     <div class="reviews-section">
       <h2>User Reviews</h2>
-      <div class="review-card">
-        <h3>@noodlefan1</h3>
-        <p>“The broth was incredible and the spice was perfect.”</p>
-        <div class="rating">13</div>
-      </div>
-      <div class="review-card">
-        <h3>@noodlefan2</h3>
-        <p>“Best ramen I’ve had this year. Great depth in flavor.”</p>
-        <div class="rating">14</div>
-      </div>
+      {% for r in review %}
+        <div class="review-card" data-review-id="{{ r.review_id }}">
+          <h3>@{{ r.review_id }}</h3>
+          <p>{{ r.text }}</p>
+          <div class="rating">
+            <span class="like-count">{{ r.likes }}</span> 👍
+          </div>
+        </div>
+      {% empty %}
+        <p>No reviews yet for this restaurant.</p>
+      {% endfor %}
     </div>
+    
+
+
 
   </main>
 
@@ -164,6 +158,7 @@
     &copy; 2025 YumLog. All rights reserved.
   </footer>
 
-  <script src="js/main.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  
 </body>
 </html>

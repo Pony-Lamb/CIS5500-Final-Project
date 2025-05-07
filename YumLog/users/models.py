@@ -1,15 +1,17 @@
 from django.db import models
 
 class users(models.Model):
-    user_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)  # 昵称
-    email = models.EmailField(unique=True)  # 登录唯一凭证
-    password = models.CharField(max_length=128)  # 存储哈希值
+    user_id = models.CharField(primary_key=True, max_length=50)  
+    name = models.CharField(max_length=100)
+    password = models.CharField(max_length=50)
+    tags = models.TextField(blank=True)
     profile = models.TextField(blank=True)
-    tags = models.CharField(max_length=255, blank=True)
+    # city = models.CharField(max_length=100, blank=True)
+    # state = models.CharField(max_length=100, blank=True)
+    email = models.TextField()
 
     def __str__(self):
-        return f"{self.name} ({self.email})"
+        return f"{self.name} ({self.user_id})"
 
 
 class restaurants(models.Model):
@@ -25,6 +27,7 @@ class restaurants(models.Model):
 
     class Meta:
         db_table = 'restaurants'
+
        
 
 class reviews(models.Model):
@@ -44,17 +47,18 @@ class reviews(models.Model):
         
 
 
-class MenuDish(models.Model):
-    name = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    restaurant = models.OneToOneField(restaurants, on_delete=models.CASCADE, related_name='menu')
+class menudishes(models.Model):
+    restaurant = models.ForeignKey(restaurants, on_delete=models.CASCADE)
+    menu_name = models.CharField(max_length=100)
+    category = models.TextField(blank=True)
+    price = models.FloatField()
+    popularity_score = models.FloatField(default=0.0)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        unique_together = (('restaurant', 'menu_name'),)
 
 
-class Recipe(models.Model):
+class recipes(models.Model):
     recipe_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     ingredient = models.TextField()
@@ -66,8 +70,10 @@ class Recipe(models.Model):
 
 
 class Match(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='matched_dishes')
-    menudish = models.ForeignKey(MenuDish, on_delete=models.CASCADE, related_name='matched_recipes')
+    restaurant = models.ForeignKey(restaurants, on_delete=models.CASCADE)
+    menu_name = models.CharField(max_length=100)
+    recipe = models.ForeignKey(recipes, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.recipe.title} ↔ {self.menudish.name}"
+    class Meta:
+        unique_together = (('restaurant', 'menu_name', 'recipe'),)
+

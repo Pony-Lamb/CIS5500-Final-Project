@@ -1,3 +1,4 @@
+{% load static %}
 <!-- File: community.html -->
 <!DOCTYPE html>
 <html lang="en">
@@ -5,7 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Community</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <style>
     /* ==== Community Page Overrides ==== */
     .community-page {
@@ -17,7 +18,7 @@
       margin-bottom: 1.5rem;
     }
     .review-card {
-      background: #fff;
+      background: var(--glass-bg);
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 1rem;
@@ -42,7 +43,7 @@
       color: #333;
     }
     .poll-card {
-      background: #fff;
+      background: var(--glass-bg);
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 1rem;
@@ -84,6 +85,35 @@
       font-size: 0.9rem;
       color: #333;
     }
+
+    .review-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+  }
+
+  .review-text {
+    flex: 1;
+    margin: 0;
+  }
+
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+  }
+
+  .fav-icon {
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #444;
+  }
+
   </style>
 </head>
 <body>
@@ -91,28 +121,14 @@
   <!-- NAV (dual‐nav) -->
   <nav>
     <div class="container">
-      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
-
-      <!-- Guest nav -->
-      <ul id="nav-guest">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html" class="active">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li class="profile"><a href="login.html">Log In</a></li>
-        <li><a class="btn" href="signup.html">Sign Up</a></li>
-      </ul>
-
-      <!-- Authenticated nav -->
-      <ul id="nav-auth" style="display: none;">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html" class="active">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li><a href="profile.html">Profile</a></li>
-        <li class="logout">
-          <a href="logout.html" class="btn">Log Out</a>
-        </li>
+      <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
+      <ul id="nav-auth">
+        <li><a href="{% url 'private_index' %}" class="active">Home</a></li>
+        <li><a href="{% url 'discovery' %}">Discover</a></li>
+        <li><a href="{% url 'community' %}">Community</a></li>
+        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li>
+        <li><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
     </div>
   </nav>
@@ -122,18 +138,20 @@
 
     <h1>Community Feed</h1>
 
-    <!-- Review cards -->
-    <div class="review-card">
-      <h3>@jiayang</h3>
-      <p><strong>Spicy Ramen House:</strong> This ramen hit all the right notes</p>
+  <!-- Review cards -->
+  {% for text in reviews %}
+  <div class="review-card">
+    <p class="review-text">{{ text }}</p>
+    <div class="icon-wrapper">
       <span class="fav-icon">♡</span>
     </div>
+  </div>
+  {% empty %}
+  <p>No reviews found.</p>
+  {% endfor %}
 
-    <div class="review-card">
-      <h3>@foodlover2</h3>
-      <p><strong>Spicy Ramen House:</strong> Flavor bomb and perfect spice balance!</p>
-      <span class="fav-icon">♡</span>
-    </div>
+  </main>
+
 
     <!-- Community Poll -->
     <div class="poll-card">
@@ -158,6 +176,6 @@
     &copy; 2025 YumLog. All rights reserved.
   </footer>
 
-  <script src="js/main.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
