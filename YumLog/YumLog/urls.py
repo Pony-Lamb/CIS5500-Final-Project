@@ -24,7 +24,7 @@ urlpatterns = [
     path("users/", include('users.urls')),
     path("signup/", register_view, name='signup'),
     path("login/", login_view, name='login'), 
-    path("private_index/", home_view, name='private_index'), 
+    #path("private_index/", home_view, name='private_index'), 
     path('discovery/', restaurant_list_view, name='discovery'), 
     path('community/', community_view, name='community'),
     path('smart_recs/', smart_recs_view, name='smart_recs'),

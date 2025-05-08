@@ -162,7 +162,7 @@
           </div>
 
           {% if item.recipe %}
-            <a href="{% url 'recipe_detail' item.recipe.recipe_id %}" style="margin-left: 1rem; color: #e47979; font-weight: 500;">
+            <a href="/recipe?recipe_id={{ item.recipe.recipe_id }}" style="margin-left: 1rem; color: #e47979; font-weight: 500;">
               Match this dish to a home recipe →
             </a>
           {% else %}

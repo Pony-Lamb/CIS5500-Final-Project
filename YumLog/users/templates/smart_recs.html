@@ -64,7 +64,7 @@
           <h3 style="white-space: pre;">Recipe:   
             <a href="/recipe?recipe_id={{ context.recipe_id }}">{{ context.recipe }}</a></h3>
           <p style="white-space: pre;">  Menu matched:   {{ context.menu }}</p>
-          <p style="white-space: pre;">  Served at:   {{ context.restaurant }}</p>
+          <p style="white-space: pre;">  Served at:   <a href="/users/restaurant/{{ context.restaurant_id }}">{{ context.restaurant }}</a></p>
         </div>
       </div>
       {% endfor %}

@@ -1,7 +1,7 @@
 from django.db import models
 
 class users(models.Model):
-    user_id = models.CharField(primary_key=True, max_length=128)  
+    user_id = models.CharField(primary_key=True, max_length=50)  
     name = models.CharField(max_length=128)
     password = models.CharField(max_length=128)
     tags = models.TextField(blank=True)

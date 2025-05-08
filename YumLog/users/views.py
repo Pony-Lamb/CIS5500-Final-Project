@@ -31,7 +31,7 @@ def login_view(request):
 
         try:
             user = users.objects.get(email=email)
-            if check_password(password, user.password):
+            if password == user.password or check_password(password, user.password):
                 # ✅ 手动设置 session 标记用户为已登录
                 request.session['user_email'] = user.email
                 request.session['is_logged_in'] = True
@@ -61,7 +61,10 @@ def register_view(request):
         tags_list = tags_str.split(',') if tags_str else []
         tags_final = ','.join([tag.strip() for tag in tags_list])  # ✅ 去除多余空格再拼接
 
+        num = users.objects.count()
+        id = 'u' + str(num)
         users.objects.create(
+            user_id=id,
             name=username,
             email=email,
             password=make_password(password),
@@ -75,7 +78,7 @@ def register_view(request):
 
 def logout_view(request):
     request.session.flush()  # ✅ 清除所有 session 数据
-    return redirect('public_index')
+    return redirect('/')
 
 
 def profile_view(request):
@@ -297,7 +300,7 @@ def smart_recs_view(request):
     contexts = []
     try:
         cur = connection.cursor()
-        cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id \
+        cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id, m.restaurant_id \
                     FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
                         JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
                     LIMIT 10;")
@@ -309,6 +312,7 @@ def smart_recs_view(request):
                 'menu': row[1],
                 'recipe': row[2],
                 'recipe_id': row[3],
+                'restaurant_id': row[4],
             }
             contexts.append(context)
 
