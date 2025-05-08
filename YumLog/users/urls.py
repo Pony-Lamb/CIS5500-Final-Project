@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     register_view,
     login_view,
@@ -18,6 +19,7 @@ from .views import (
 urlpatterns = [
     path('', public_index, name='public_index'), 
     path('register/', register_view, name='register'),  # 注册页面
+    path('transfer/', views.google_transfer_view, name='google_transfer'), # google sign in transfer page
     path('profile/', profile_view, name='profile'),  # 注册页面
     path('login/', login_view, name='login'),  # 登录页面
     path('private_index/', home_view, name='private_index'),  # 登录后首页
