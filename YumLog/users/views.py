@@ -455,12 +455,16 @@ def restaurant_detail_view(request, restaurant_id):
 
 def smart_recs_view(request):
     contexts = []
+    page_number_str = request.GET.get('page', '1')
+    page_number = int(page_number_str)
+    page_range = []
+    pre_page, next_page = page_number, page_number
     try:
         cur = connection.cursor()
         cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id, m.restaurant_id \
                     FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
                         JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
-                    LIMIT 10;")
+                    LIMIT 10 OFFSET 10 * (" + page_number_str + " - 1);")
         rows = cur.fetchall()
 
         for row in rows:
@@ -473,10 +477,25 @@ def smart_recs_view(request):
             }
             contexts.append(context)
 
+        cur.execute("SELECT COUNT(*) \
+                    FROM match m ;")
+        row = cur.fetchone()
+        max_page_num = int(int(row[0])/10) + 1
+        for i in range(-2, 3):
+            if (page_number + i) > 0 and (page_number + i) <= max_page_num:
+                page_range.append(page_number + i)
+        if (page_number - 1) > 0:
+            pre_page = page_number - 1
+        if (page_number + 1) < max_page_num:
+            next_page = page_number + 1
+
         cur.close()
 
     except Exception as e:
         print("connection fail: ", e)
+
+    # paginator = Paginator(contexts, 8)
+    # page_obj = paginator.get_page(page_number)
 
     return render(request, 'smart_recs.html', locals())
 
