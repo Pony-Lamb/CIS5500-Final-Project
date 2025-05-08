@@ -4,6 +4,8 @@ from .models import users, restaurants, menudishes, reviews, match, recipes
 from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import authenticate, login
 from django.db.models import Q
+from django.db import connection
+import re
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.db.models.expressions import RawSQL
@@ -77,7 +79,59 @@ def logout_view(request):
 
 
 def profile_view(request):
-    return render(request, 'profile.html')
+    # reviews = []
+    # email = 'user1@yumlog.com'
+    # try:
+    #     cur = connection.cursor()
+    #     sql = "SELECT u.name, u.tags, r.text, r.likes, r2.name \
+    #                 FROM users u JOIN reviews r on u.user_id = r.user_id \
+    #                     JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
+    #                 WHERE u.email = '" + email + "';"
+    #     cur.execute(sql)
+    #     rows = cur.fetchall()
+    #     for row in rows:
+    #         username = row[0]
+    #         tags = row[1].split(',')
+    #         review = {
+    #             'text': row[2],
+    #             'likes': row[3],
+    #             'restaurant': row[4],
+    #         }
+    #         reviews.append(review)
+            
+    #     cur.close()
+
+    # except Exception as e:
+    #     print("connection fail: ", e)
+
+    if request.session['is_logged_in']:
+        email = request.session['user_email']
+        #username = request.session['username']
+        reviews = []
+        try:
+            cur = connection.cursor()
+            sql = "SELECT u.name, u.tags, r.text, r.likes, r2.name \
+                    FROM users u JOIN reviews r on u.user_id = r.user_id \
+                        JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
+                    WHERE u.email = '" + email + "';"
+            cur.execute(sql)
+            rows = cur.fetchall()
+            for row in rows:
+                username = row[0]
+                tags = row[1].split(',')
+                review = {
+                    'text': row[2],
+                    'likes': row[3],
+                    'restaurant': row[4],
+                }
+                reviews.append(review)
+            
+            cur.close()
+
+        except Exception as e:
+            print("connection fail: ", e)
+    
+    return render(request, 'profile.html', locals())
 
 
 
@@ -239,8 +293,31 @@ def restaurant_detail_view(request, restaurant_id):
 
     return render(request, 'restaurant.html', context)
 
-def recommendations_view(request):
-    return render(request, 'recommendations.html')
+def smart_recs_view(request):
+    contexts = []
+    try:
+        cur = connection.cursor()
+        cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id \
+                    FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
+                        JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
+                    LIMIT 10;")
+        rows = cur.fetchall()
+
+        for row in rows:
+            context = {
+                'restaurant': row[0],
+                'menu': row[1],
+                'recipe': row[2],
+                'recipe_id': row[3],
+            }
+            contexts.append(context)
+
+        cur.close()
+
+    except Exception as e:
+        print("connection fail: ", e)
+
+    return render(request, 'smart_recs.html', locals())
 
 
 
@@ -344,29 +421,62 @@ def restaurant_list_view(request):
     return render(request, 'discovery.html', context)
 
 
-def recipe_detail_view(request, recipe_id):
-    # 获取当前 Recipe 对象
-    recipe = get_object_or_404(recipes, recipe_id=recipe_id)
+def recipe_detail_view(request):
+    # # 获取当前 Recipe 对象
+    # recipe = get_object_or_404(recipes, recipe_id=recipe_id)
 
-    # 获取其它推荐 Recipe（Matched Recipes）
-    matched_recipes = recipes.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
+    # # 获取其它推荐 Recipe（Matched Recipes）
+    # matched_recipes = recipes.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
 
-    # 获取当前 Recipe 匹配到的所有 MenuDish（即：在哪些餐厅有类似的菜）
-    matched_menu_dishes = match.objects.filter(recipe=recipe)
+    # # 获取当前 Recipe 匹配到的所有 MenuDish（即：在哪些餐厅有类似的菜）
+    # matched_menu_dishes = match.objects.filter(recipe=recipe)
 
-    # 获取菜品所属餐厅信息
-    similar_restaurants = [match.menudish.restaurant for match in matched_menu_dishes]
+    # # 获取菜品所属餐厅信息
+    # similar_restaurants = [match.menudish.restaurant for match in matched_menu_dishes]
 
-    context = {
-        'recipe': recipe,                         # 当前菜谱对象
-        'matched_recipes': matched_recipes,       # 相关推荐菜谱
-        'similar_restaurants': similar_restaurants  # 相似餐厅（从匹配菜品中提取）
-    }
+    # context = {
+    #     'recipe': recipe,                         # 当前菜谱对象
+    #     'matched_recipes': matched_recipes,       # 相关推荐菜谱
+    #     'similar_restaurants': similar_restaurants  # 相似餐厅（从匹配菜品中提取）
+    # }
 
-    return render(request, 'recipe_detail.html', context)
+    # return render(request, 'recipe_detail.html', context)
+    recipe_id = request.GET.get('recipe_id')
+    try:
+        cur = connection.cursor()
+        sql = "SELECT title, ingredient, directions, ner \
+                FROM recipes \
+                WHERE recipe_id = " + recipe_id + ";"
+        cur.execute(sql)
+        row = cur.fetchone()
+        # recipe['recipe'] = row[0]
+        recipe = row[0]
+        ingredients = clean_string(row[1])
+        directions = clean_string(row[2])
+        ner = row[3].strip("[]").replace("'", '')
+        # recipe['ingredients'] = ingredients
+        # recipe['directions'] = directions
+        print(row[2])
+        cur.close()
+
+    except Exception as e:
+        print("connection fail: ", e)
+
+    return render(request, 'recipe.html', locals())
+
+def clean_string(input):
+    cleaned = []
+    texts = input.strip("[]").split("', ")
+    for text in texts:
+        text = text.strip("'")
+        pattern = r'^[0-9]+\.'
+        clean_text = re.sub(pattern, '', text).strip()
+        if clean_text != '':
+            cleaned.append(clean_text)
+
+    return cleaned
 
 
-    
 
 
 

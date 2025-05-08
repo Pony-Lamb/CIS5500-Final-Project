@@ -1,11 +1,12 @@
 <!-- File: recipe.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Recipe Match</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
   <style>
     /* ==== Recipe Page Overrides ==== */
     .recipe-page {
@@ -53,73 +54,41 @@
 </head>
 <body>
 
-  <!-- NAV -->
+  <!-- NAV (dual‐nav) -->
   <nav>
     <div class="container">
-      <a class="logo"><img src="logo.png" alt="YumLog logo" /></a>
-
-      <!-- Guest nav -->
-      <ul id="nav-guest">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li class="profile"><a href="login.html">Log In</a></li>
-        <li><a class="btn" href="signup.html">Sign Up</a></li>
-      </ul>
-
-      <!-- Auth nav -->
-      <ul id="nav-auth" style="display: none;">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="discovery.html">Discover</a></li>
-        <li><a href="community.html">Community</a></li>
-        <li><a href="recommendations.html">Smart Recs</a></li>
-        <li><a href="profile.html">Profile</a></li>
-        <li class="logout">
-          <a href="logout.html" class="btn">Log Out</a>
-        </li>
+      <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
+      <ul id="nav-auth">
+        <li><a href="{% url 'private_index' %}">Home</a></li>
+        <li><a href="{% url 'discovery' %}">Discover</a></li>
+        <li><a href="{% url 'community' %}">Community</a></li>
+        <li><a href="{% url 'smart_recs' %}">Smart Recs</a></li>
+        <li><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
     </div>
   </nav>
 
   <!-- MAIN -->
   <main class="container recipe-page">
-    <h1>Spicy Tonkotsu Ramen</h1>
-
-    <h2 class="section-title">Matched Recipes</h2>
-    <ul>
-      <li>Authentic Pork Bone Ramen</li>
-      <li>Spicy Miso Broth with Noodles</li>
-      <li>Homestyle Ramen Bowl</li>
-    </ul>
-
-    <h2 class="section-title">Similar Restaurant Dishes</h2>
-    <ul>
-      <li><a href="restaurant.html">Spicy Ramen House</a></li>
-      <li>Noodle Nest</li>
-    </ul>
+    <h1>{{ recipe }}</h1>
 
     <h2 class="section-title">Ingredients</h2>
     <ul>
-      <li>2 cups pork bone broth</li>
-      <li>1 tsp sesame oil</li>
-      <li>2 tbsp miso paste</li>
-      <li>Ramen noodles</li>
-      <li>Chashu pork</li>
-      <li>Green onions</li>
+      {% for ingredient in ingredients %}
+        <li>{{ ingredient }}</li>
+      {% endfor %}
     </ul>
-    <p>Simmer pork bone broth with sesame oil and miso paste. Boil noodles, then combine and top with chashu pork and green onions.</p>
+    <p>NER: {{ ner }}</p>
 
     <h2 class="section-title">Directions</h2>
     <ol>
-      <li>Simmer pork bone broth with sesame oil and miso paste over medium heat.</li>
-      <li>Boil ramen noodles according to package instructions.</li>
-      <li>Prepare toppings: slice chashu pork, chop green onions.</li>
-      <li>Combine broth and noodles in a bowl.</li>
-      <li>Top with chashu pork, green onions, and serve hot.</li>
+      {% for direction in directions %}
+        <li>{{ direction }}</li>
+      {% endfor %}
     </ol>
 
-    <a class="btn-outline" href="#">Generate Shopping List</a><br/>
+    <!-- <a class="btn-outline" href="#">Generate Shopping List</a><br/> -->
     <a class="back-link" href="javascript:history.back()">‹ Back</a>
   </main>
 
@@ -127,6 +96,6 @@
     &copy; 2025 YumLog. All rights reserved.
   </footer>
 
-  <script src="js/main.js"></script>
+  <script src="/static/js/main.js"></script>
 </body>
 </html>
