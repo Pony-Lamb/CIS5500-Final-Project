@@ -42,14 +42,14 @@ class reviews(models.Model):
     text = models.TextField()
     likes = models.IntegerField(default=0)
     stars = models.IntegerField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.name} - {self.restaurant.name}"  # ✅ 修改了这里
 
     class Meta:
         db_table = 'reviews'   # ✅ 改成你数据库真实的表名
-        managed = False  
+       
         
 
 

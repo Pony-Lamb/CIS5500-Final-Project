@@ -16,6 +16,9 @@ from django.db.models.functions import ACos, Cos, Radians, Sin
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+import datetime
+from datetime import date
+from django.db import connection
 
 
 # 首页视图
@@ -85,67 +88,210 @@ def logout_view(request):
     request.session.flush()  # ✅ 清除所有 session 数据
     return redirect('index')
 
+ALL_TAGS = [
+    "American", "Burgers", "Fast Food", "Mexican", "Asian",
+    "Pizza", "Desserts", "Seafood", "Sushi", "Vegetarian Friendly"
+]
 
 def profile_view(request):
-    # reviews = []
-    # email = 'user1@yumlog.com'
-    # try:
-    #     cur = connection.cursor()
-    #     sql = "SELECT u.name, u.tags, r.text, r.likes, r2.name \
-    #                 FROM users u JOIN reviews r on u.user_id = r.user_id \
-    #                     JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
-    #                 WHERE u.email = '" + email + "';"
-    #     cur.execute(sql)
-    #     rows = cur.fetchall()
-    #     for row in rows:
-    #         username = row[0]
-    #         tags = row[1].split(',')
-    #         review = {
-    #             'text': row[2],
-    #             'likes': row[3],
-    #             'restaurant': row[4],
-    #         }
-    #         reviews.append(review)
-            
-    #     cur.close()
+    # if request.session.get('is_logged_in'):
+    email = request.session.get('user_email', 'yongyinyang0418@gmail.com')
+    reviews = []
+    username = ""
+    tags = []
 
-    # except Exception as e:
-    #     print("connection fail: ", e)
+    try:
+        cur = connection.cursor()
 
-    if request.session['is_logged_in']:
+        # 获取用户名和当前标签
+        cur.execute("SELECT u.name, u.tags FROM users u WHERE u.email = %s;", [email])
+        row = cur.fetchone()
+
+        if row:
+            username = row[0] if row[0] else "sheepMie"
+            tags = row[1].split(',') if row[1] else ["American"]
+            print(f"[DEBUG] Found user: name={username}, tags={tags}")
+        else:
+            username = "sheepMie"
+            tags = ["American"]
+            print(f"[DEBUG] No user found for {email}. Using default values.")
+
+        # ✅ 获取用户的评论
+        cur.execute("""
+            SELECT r.review_id, r.text, r.likes, r.stars, r.date, rest.name 
+            FROM users u 
+            JOIN reviews r ON u.user_id = r.user_id 
+            JOIN restaurants rest ON rest.restaurant_id = r.restaurant_id 
+            WHERE u.email = %s
+            ORDER BY r.date DESC;
+        """, [email])
+
+        rows = cur.fetchall()
+        for row in rows:
+            reviews.append({
+                'review_id': row[0],
+                'text': row[1],
+                'likes': row[2],
+                'stars': row[3],
+                'date': row[4],
+                'restaurant': row[5],
+            })
+
+        cur.close()
+
+    except Exception as e:
+        print("[ERROR] Database connection failed:", e)
+        username = "sheepMie"
+        tags = ["American"]
+
+    print(f"[RESULT] username={username}, tags={tags}, review_count={len(reviews)}")
+
+    return render(request, 'profile.html', {
+        'username': username,
+        'email': email,
+        'tags': tags,
+        'all_tags': ALL_TAGS,
+        'reviews': reviews
+    })
+
+    return redirect('login')
+
+
+
+
+
+def update_tags_view(request):
+    if request.method == 'POST' and request.session.get('user_email'):
         email = request.session['user_email']
-        #username = request.session['username']
-        reviews = []
+        selected_tags = request.POST.getlist("tags")
+        tags_str = ",".join(selected_tags)
+
         try:
             cur = connection.cursor()
-            sql = "SELECT u.name, u.tags \
-                    FROM users u \
-                    WHERE u.email = '" + email + "';"
-            cur.execute(sql)
-            row = cur.fetchone()
-            username = row[0]
-            tags = row[1].split(',')
+            cur.execute("UPDATE users SET tags = %s WHERE email = %s;", [tags_str, email])
+            connection.commit()  # ✅ 添加这一行
+            cur.close()
+            print(f"[SUCCESS] Updated tags to {tags_str} for {email}")
+        except Exception as e:
+            print("[ERROR] Failed to update tags: ", e)
 
-            sql = "SELECT r.text, r.likes, r2.name \
-                    FROM users u JOIN reviews r on u.user_id = r.user_id \
-                        JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
-                    WHERE u.email = '" + email + "';"
-            cur.execute(sql)
-            rows = cur.fetchall()
-            for row in rows:
-                review = {
-                    'text': row[0],
-                    'likes': row[1],
-                    'restaurant': row[2],
-                }
-                reviews.append(review)
-            
+    return redirect('profile')
+
+
+
+
+def submit_review(request, restaurant_id):
+    if request.method == 'POST' and request.session.get('is_logged_in'):
+        text = request.POST.get('text')
+        stars = float(request.POST.get('stars'))
+        email = request.session.get('user_email')
+
+        try:
+            user = users.objects.get(email=email)
+            restaurant = restaurants.objects.get(restaurant_id=restaurant_id)
+
+            # ❗手动生成唯一 review_id（不要用于高并发生产环境）
+            cur = connection.cursor()
+            cur.execute("SELECT MAX(review_id) FROM reviews;")
+            max_id = cur.fetchone()[0] or 0
+            next_id = max_id + 1
             cur.close()
 
+            # 插入评论（显式指定 review_id）
+            reviews.objects.create(
+                review_id=next_id,
+                user=user,
+                restaurant=restaurant,
+                text=text,
+                stars=stars,
+                likes=0,
+                date=date.today()
+            )
+
         except Exception as e:
-            print("connection fail: ", e)
+            print("插入评论失败：", e)
+
+    return redirect('restaurant_detail', restaurant_id=restaurant_id)
+
+
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def delete_review(request, review_id):
+    if request.method == 'POST' and request.session.get('is_logged_in'):
+        try:
+            email = request.session['user_email']
+            user = users.objects.get(email=email)
+            review = reviews.objects.get(review_id=review_id)
+
+            if review.user.user_id == user.user_id:
+                review.delete()
+        except Exception as e:
+            print("删除失败：", e)
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+# def profile_view(request):
+#     # reviews = []
+#     # email = 'user1@yumlog.com'
+#     # try:
+#     #     cur = connection.cursor()
+#     #     sql = "SELECT u.name, u.tags, r.text, r.likes, r2.name \
+#     #                 FROM users u JOIN reviews r on u.user_id = r.user_id \
+#     #                     JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
+#     #                 WHERE u.email = '" + email + "';"
+#     #     cur.execute(sql)
+#     #     rows = cur.fetchall()
+#     #     for row in rows:
+#     #         username = row[0]
+#     #         tags = row[1].split(',')
+#     #         review = {
+#     #             'text': row[2],
+#     #             'likes': row[3],
+#     #             'restaurant': row[4],
+#     #         }
+#     #         reviews.append(review)
+            
+#     #     cur.close()
+
+#     # except Exception as e:
+#     #     print("connection fail: ", e)
+
+#     if request.session['is_logged_in']:
+#         email = request.session['user_email']
+#         #username = request.session['username']
+#         reviews = []
+#         try:
+#             cur = connection.cursor()
+#             sql = "SELECT u.name, u.tags \
+#                     FROM users u \
+#                     WHERE u.email = '" + email + "';"
+#             cur.execute(sql)
+#             row = cur.fetchone()
+#             username = row[0]
+#             tags = row[1].split(',')
+
+#             sql = "SELECT r.text, r.likes, r2.name \
+#                     FROM users u JOIN reviews r on u.user_id = r.user_id \
+#                         JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
+#                     WHERE u.email = '" + email + "';"
+#             cur.execute(sql)
+#             rows = cur.fetchall()
+#             for row in rows:
+#                 review = {
+#                     'text': row[0],
+#                     'likes': row[1],
+#                     'restaurant': row[2],
+#                 }
+#                 reviews.append(review)
+            
+#             cur.close()
+
+#         except Exception as e:
+#             print("connection fail: ", e)
     
-    return render(request, 'profile.html', locals())
+#     return render(request, 'profile.html', locals())
 
 
 
@@ -508,6 +654,33 @@ from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
+
+def google_transfer_view(request):
+    # 获取 Google 登录后的用户邮箱
+    email = request.user.email
+
+    # ✅ 若数据库中没有该用户，就创建一条记录（用于配合自定义 users 表）
+    if not users.objects.filter(email=email).exists():
+        uid = f'u{users.objects.count() + 1:03}'  # 生成唯一 user_id
+        users.objects.create(
+            user_id=uid,
+            email=email,
+            name='',            # ✅ 初始为空
+            password='',        # ✅ Google 登录不需要密码
+            tags='',            # ✅ 不默认 American，让用户自己选
+            profile='',
+            city='',
+            state=''
+        )
+        print(f"[INFO] Created users entry for Google user: {email}")
+
+    # ✅ 登录状态写入 session
+    request.session['is_logged_in'] = True
+    request.session['user_email'] = email
+
+    return redirect('profile')  # 跳转到 profile 页面让用户补充 tags 和 name
+
+
 class CustomSocialSignupView(SignupView):
     def dispatch(self, request, *args, **kwargs):
         logger.info(f"CustomSocialSignupView dispatch, path={request.path}")
@@ -526,3 +699,4 @@ class CustomSocialSignupView(SignupView):
         # Log a message when the form is successfully validated
         logger.info("Signup form valid, proceeding to redirect")
         return super().form_valid(form)
+

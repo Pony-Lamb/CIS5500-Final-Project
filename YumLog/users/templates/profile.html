@@ -1,4 +1,3 @@
-<!-- File: profile.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -6,11 +5,111 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Profile</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <style>
+    /* === 标签样式美化 === */
+    .tag {
+      display: inline-block;
+      background: #f4f4f4;
+      padding: 6px 12px;
+      margin: 5px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+    }
+    .profile-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+
+    .edit-icon {
+      margin-left: 10px;
+      cursor: pointer;
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tag-edit-form {
+      margin-top: 15px;
+      padding: 20px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .tag-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .tag-checkbox {
+      display: flex;
+      align-items: center;
+      background-color: #f4f4f4;
+      padding: 8px 14px;
+      border-radius: 20px;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .tag-checkbox input[type="checkbox"] {
+      display: none;
+    }
+
+    .tag-checkbox .tag-label {
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .tag-checkbox input[type="checkbox"]:checked + .tag-label {
+      color: #f27596;
+      font-weight: bold;
+    }
+
+    .tag-checkbox input[type="checkbox"]:checked + .tag-label::before {
+      content: "✔ ";
+    }
+
+    .tag-checkbox:hover {
+      background-color: #f5c6d2;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-save {
+      background-color: #f27596;
+      color: white;
+      margin-right: 10px;
+    }
+
+    .btn-save:hover {
+      background-color: #d84a72;
+    }
+
+    .btn-cancel {
+      background-color: #ddd;
+      color: #333;
+    }
+
+    .btn-cancel:hover {
+      background-color: #bbb;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- NAV (dual‐nav) -->
+  <!-- NAV -->
   <nav>
     <div class="container">
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
@@ -32,52 +131,96 @@
       <div class="profile-bio">
         <span>{{ email }}</span>
       </div>
+
       <div class="profile-tags">
-        {% for tag in tags %}
-          <div class="tag">#{{ tag }}<span class="edit-icon">✎</span></div>
-        {% endfor %}
+        <!-- 当前标签展示 -->
+        <div id="tags-display">
+          {% for tag in tags %}
+            <div class="tag">#{{ tag }}</div>
+          {% endfor %}
+          <span class="edit-icon" onclick="showEdit()">✎</span>
+        </div>
+
+        <!-- 标签编辑表单 -->
+        <form id="tags-form" method="POST" action="{% url 'update_tags' %}" class="tag-edit-form" style="display: none;">
+          {% csrf_token %}
+          <div class="tag-checkboxes">
+            {% for tag in all_tags %}
+              <label class="tag-checkbox">
+                <input type="checkbox" name="tags" value="{{ tag }}" {% if tag in tags %}checked{% endif %}>
+                <span class="tag-label">{{ tag }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-save">Save</button>
+          <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+        </form>
       </div>
     </div>
-  
+
     <div class="reviews-section">
       <h2 class="section-title">Reviews</h2>
       <div>
         {% for review in reviews %}
-          <div class="review-card">
+          <div class="review-card" style="position: relative; padding-bottom: 1rem;">
             <h3>{{ review.restaurant }}</h3>
-            <div class="rating"><span class="icon-wrapper">♡</span>{{ review.likes }}</div>
-            <p>“{{ review.text }}”</p>
+            <p style="margin: 0.5rem 0;">{{ review.text }}</p>
+    
+            <!-- 星级和时间 -->
+            <div style="font-size: 0.9rem; color: #555;">
+              {% for i in "12345" %}
+                {% if forloop.counter <= review.stars %}
+                  <span style="color: #FFD700;">★</span>
+                {% else %}
+                  <span style="color: #ccc;">☆</span>
+                {% endif %}
+              {% endfor %}
+              · {{ review.date|date:"Y-m-d H:i" }}
+            </div>
+    
+            <!-- 点赞 + 删除（统一右下角） -->
+            <div style="position: absolute; right: 1rem; bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+              <div style="font-size: 0.9rem; color: #999;">
+                {{ review.likes }} 👍
+              </div>
+              <form method="POST" action="{% url 'delete_review' review_id=review.review_id %}">
+                {% csrf_token %}
+                <button type="submit" title="Delete"
+                  style="background: none; border: none; font-size: 1.1rem; color: #888; cursor: pointer;">
+                  🗑️
+                </button>
+              </form>
+            </div>
           </div>
         {% empty %}
           <p style="color: #888; font-size: 0.9rem; margin-left: 1rem;">No reviews.</p>
         {% endfor %}
       </div>
     </div>
-  
-    <!-- <div class="wishlist">
-      <h2 class="section-title">Wishlist</h2>
-      <div class="card">
-        <div class="card-body">Udon Palace</div>
-      </div>
-      <div class="card">
-        <div class="card-body">Taco Galaxy</div>
-      </div>
-    </div>
-  
-    <div class="badges-section">
-      <h2 class="section-title">Activity Badges</h2>
-      <div class="badges">
-        <div class="badge">Reviewed All Categories</div>
-        <div class="badge">Top 10% Reviewer</div>
-      </div>
-    </div> -->
-  
+    
+    
+    
+    
+
   </main>
 
   <footer>
     &copy; 2025 YumLog. All rights reserved.
   </footer>
 
-  <script src="/static/js/main.js"></script>
+  <script>
+    function showEdit() {
+      document.getElementById("tags-display").style.display = "none";
+      document.getElementById("tags-form").style.display = "block";
+    }
+    function cancelEdit() {
+      document.getElementById("tags-form").style.display = "none";
+      document.getElementById("tags-display").style.display = "block";
+    }
+  </script>
+
+  <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
+
+

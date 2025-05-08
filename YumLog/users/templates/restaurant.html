@@ -97,6 +97,41 @@
       50% { transform: scale(1.4); }
       100% { transform: scale(1); }
     }
+    /* 动态星星评分 */
+    #star-rating {
+      display: flex;
+    }
+
+    #star-rating .star {
+      font-size: 1.8rem;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    #star-rating .star.hover,
+    #star-rating .star.selected {
+      color: #f3ca43;
+    }
+    .menu-scroll-container {
+      max-height: 350px;         /* 设置最大高度 */
+      overflow-y: auto;          /* 启用垂直滚动条 */
+      padding-right: 10px;       /* 避免内容被滚动条遮住 */
+    }
+
+    /* 滚动条美化（可选） */
+    .menu-scroll-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .menu-scroll-container::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+    .menu-scroll-container::-webkit-scrollbar-track {
+      background-color: #f4f4f4;
+    }
+
+
 
 
   </style>
@@ -154,23 +189,26 @@
     <!-- Menu -->
     <div class="menu-section">
       <h2>Menu</h2>
-      {% for item in dish_with_recipe %}
-        <div class="card">
-          <div class="card-body" style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 500;">{{ item.dish.menu_name }}</span>
-            <span style="font-weight: 500;">${{ item.dish.price }}</span>
-          </div>
+      <div class="menu-scroll-container">
+        {% for item in dish_with_recipe %}
+          <div class="card">
+            <div class="card-body" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 500;">{{ item.dish.menu_name }}</span>
+              <span style="font-weight: 500;">${{ item.dish.price }}</span>
+            </div>
 
-          {% if item.recipe %}
-            <a href="/recipe?recipe_id={{ item.recipe.recipe_id }}" style="margin-left: 1rem; color: #e47979; font-weight: 500;">
-              Match this dish to a home recipe →
-            </a>
-          {% else %}
-            <p style="color: #888; font-size: 0.9rem; margin-left: 1rem;">No matched recipe.</p>
-          {% endif %}
-        </div>
-      {% endfor %}
+            {% if item.recipe %}
+              <a href="/recipe?recipe_id={{ item.recipe.recipe_id }}" style="margin-left: 1rem; color: #e47979; font-weight: 500;">
+                Match this dish to a home recipe →
+              </a>
+            {% else %}
+              <p style="color: #888; font-size: 0.9rem; margin-left: 1rem;">No matched recipe.</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
     </div>
+
 
 
 
@@ -193,6 +231,47 @@
         <p>No reviews yet for this restaurant.</p>
       {% endfor %}
     </div>
+
+    <!-- 评论标题放外面 -->
+    <h2>
+      LEAVE A COMMENT
+    </h2>
+
+<!-- 添加新评论（统一卡片风格 + 星星评分） -->
+<div class="review-card" style="margin-top: 2rem;">
+  <form method="POST" action="{% url 'submit_review' restaurant_id=restaurant.restaurant_id %}">
+    {% csrf_token %}
+
+    <textarea name="text"
+      rows="4"
+      placeholder="Write your thoughts here..."
+      style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.95rem; border: 1px solid #ccc; resize: vertical;"
+      required
+    ></textarea>
+
+    <!-- 星级评分 -->
+    <div style="margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-weight: bold;">Rating:</span>
+      <div id="star-rating">
+        {% for i in "12345" %}
+          <span class="star" data-value="{{ forloop.counter }}">&#9733;</span>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="stars" id="stars" required>
+    </div>
+
+    <button type="submit"
+      class="btn btn-save"
+      style="background-color: #f27596; color: white; padding: 10px 20px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer;"
+    >
+      Submit Review
+    </button>
+  </form>
+</div>
+
+
+
+
     
     
     
@@ -253,6 +332,35 @@
     }
 
   </script>
+  <script>
+    const stars = document.querySelectorAll("#star-rating .star");
+    const starsInput = document.getElementById("stars");
+  
+    let selectedRating = 0;
+  
+    stars.forEach((star, index) => {
+      star.addEventListener("mouseenter", () => {
+        highlightStars(index + 1);
+      });
+  
+      star.addEventListener("mouseleave", () => {
+        highlightStars(selectedRating);
+      });
+  
+      star.addEventListener("click", () => {
+        selectedRating = index + 1;
+        starsInput.value = selectedRating;
+        highlightStars(selectedRating);
+      });
+    });
+  
+    function highlightStars(count) {
+      stars.forEach((star, i) => {
+        star.classList.toggle("selected", i < count);
+      });
+    }
+  </script>
+  
   
     
     

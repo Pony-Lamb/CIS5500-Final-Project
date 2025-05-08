@@ -73,6 +73,14 @@
       text-align: left;
       font-size: 0.95rem;
     }
+
+
+    .poll-option.selected {
+      background-color: #e47979;
+      color: white;
+      border-color: #e47979;
+    }
+
     .section-title {
       font-size: 1.25rem;
       margin: 2rem 0 1rem;
@@ -191,10 +199,11 @@
     <div class="poll-card">
       <h2>Community Poll</h2>
       <p class="poll-question">What’s the best sushi spot in NYC?</p>
-      <button class="poll-option">Sushi Nakazawa</button>
-      <button class="poll-option">Sushi Yasuda</button>
-      <button class="poll-option">Sugarfish</button>
+      <button class="poll-option" onclick="togglePoll(this)">Sushi Nakazawa</button>
+      <button class="poll-option" onclick="togglePoll(this)">Sushi Yasuda</button>
+      <button class="poll-option" onclick="togglePoll(this)">Sugarfish</button>
     </div>
+    
 
     <!-- Explore Topics -->
     <h2 class="section-title">Explore Restaurant Topics</h2>
@@ -224,6 +233,22 @@
       });
     });
   </script>
+  <script>
+    function togglePoll(btn) {
+      const alreadySelected = btn.classList.contains("selected");
+    
+      // 清除所有按钮的选中状态
+      document.querySelectorAll(".poll-option").forEach(option => {
+        option.classList.remove("selected");
+      });
+    
+      // 如果不是取消当前选中，则标记当前为选中
+      if (!alreadySelected) {
+        btn.classList.add("selected");
+      }
+    }
+    </script>
+    
   
 </body>
 </html>
