@@ -160,7 +160,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ACCOUNT_UNIQUE_EMAIL = False
 
 # Skip confirmation on GET so users hit the signup form
-SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # Standard login/logout redirects
 LOGIN_REDIRECT_URL = '/private_index/'
