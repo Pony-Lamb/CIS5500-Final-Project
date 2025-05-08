@@ -48,7 +48,7 @@
         <li><a href="{% url 'private_index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
         <li><a href="{% url 'discovery' %}" class="{% if request.path == '/discover/' %}active{% endif %}">Discover</a></li>
         <li><a href="{% url 'community' %}" class="{% if request.path == '/community/' %}active{% endif %}">Community</a></li>
-        <li><a href="{% url 'recommendations' %}" class="{% if request.path == '/recommendations/' %}active{% endif %}">Smart Recs</a></li>
+        <li><a href="{% url 'smart_recs' %}" class="{% if request.path == '/smart_recs/' %}active{% endif %}">Smart Recs</a></li>
         <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}">Profile</a></li>
         <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
