@@ -19,7 +19,7 @@ from users.views import home_view, login_view, public_index, restaurant_list_vie
 from django.urls import path, include   
 
 urlpatterns = [
-    path('', public_index, name='index'),
+    path('', public_index, name='public_index'),
     path("admin/", admin.site.urls),
 
     # Override the social-signup URL:
@@ -40,6 +40,7 @@ urlpatterns = [
     path('community/', community_view, name='community'),
     path('smart_recs/', smart_recs_view, name='smart_recs'),
     path('recipe/', recipe_detail_view, name='recipe'),
+    path('index/', index_view, name='index'),
 
 ]
 

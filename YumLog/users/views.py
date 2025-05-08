@@ -21,8 +21,8 @@ from django.http import JsonResponse
 # 首页视图
 def index_view(request):
     if request.session.get('is_logged_in'):
-        return render(request, 'private_index.html')
-    return render(request, 'public_index.html')
+        return home_view(request)
+    return public_index(request)
 
 
 # 登录视图
@@ -38,7 +38,7 @@ def login_view(request):
                 request.session['user_email'] = user.email
                 request.session['is_logged_in'] = True
                 request.session['username'] = user.name
-                return redirect('private_index')
+                return redirect('index')
             else:
                 return render(request, 'login.html', {'errors': {'password': ['Incorrect password']}})
         except users.DoesNotExist:
@@ -83,7 +83,7 @@ def register_view(request):
 
 def logout_view(request):
     request.session.flush()  # ✅ 清除所有 session 数据
-    return redirect('/')
+    return redirect('index')
 
 
 def profile_view(request):
@@ -118,19 +118,25 @@ def profile_view(request):
         reviews = []
         try:
             cur = connection.cursor()
-            sql = "SELECT u.name, u.tags, r.text, r.likes, r2.name \
+            sql = "SELECT u.name, u.tags \
+                    FROM users u \
+                    WHERE u.email = '" + email + "';"
+            cur.execute(sql)
+            row = cur.fetchone()
+            username = row[0]
+            tags = row[1].split(',')
+
+            sql = "SELECT r.text, r.likes, r2.name \
                     FROM users u JOIN reviews r on u.user_id = r.user_id \
                         JOIN restaurants r2 on r2.restaurant_id = r.restaurant_id \
                     WHERE u.email = '" + email + "';"
             cur.execute(sql)
             rows = cur.fetchall()
             for row in rows:
-                username = row[0]
-                tags = row[1].split(',')
                 review = {
-                    'text': row[2],
-                    'likes': row[3],
-                    'restaurant': row[4],
+                    'text': row[0],
+                    'likes': row[1],
+                    'restaurant': row[2],
                 }
                 reviews.append(review)
             

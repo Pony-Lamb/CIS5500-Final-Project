@@ -45,7 +45,7 @@
     <div class="container">
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
       <ul id="nav-auth">
-        <li><a href="{% url 'private_index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
         <li><a href="{% url 'discovery' %}" class="{% if request.path == '/discover/' %}active{% endif %}">Discover</a></li>
         <li><a href="{% url 'community' %}" class="{% if request.path == '/community/' %}active{% endif %}">Community</a></li>
         <li><a href="{% url 'smart_recs' %}" class="{% if request.path == '/smart_recs/' %}active{% endif %}">Smart Recs</a></li>

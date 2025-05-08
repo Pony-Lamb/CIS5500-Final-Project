@@ -15,7 +15,7 @@
     <div class="container">
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
       <ul id="nav-auth">
-        <li><a href="{% url 'private_index' %}">Home</a></li>
+        <li><a href="{% url 'index' %}">Home</a></li>
         <li><a href="{% url 'discovery' %}">Discover</a></li>
         <li><a href="{% url 'community' %}">Community</a></li>
         <li><a href="{% url 'smart_recs' %}">Smart Recs</a></li>
@@ -48,6 +48,8 @@
             <div class="rating"><span class="icon-wrapper">♡</span>{{ review.likes }}</div>
             <p>“{{ review.text }}”</p>
           </div>
+        {% empty %}
+          <p style="color: #888; font-size: 0.9rem; margin-left: 1rem;">No reviews.</p>
         {% endfor %}
       </div>
     </div>
