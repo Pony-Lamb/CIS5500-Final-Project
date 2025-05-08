@@ -1,80 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
-from .models import users, restaurants, menudishes, reviews, Match, recipes
+from .models import users, restaurants, menudishes, reviews, match, recipes
 from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import authenticate, login
 from django.db.models import Q
+from django.core.paginator import Paginator
+from django.db.models import Count
+from django.db.models.expressions import RawSQL
+from django.db.models import F, FloatField, ExpressionWrapper
+from django.db.models.functions import ACos, Cos, Radians, Sin
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
-# # 注册视图
-# def register_view(request):
-#     if request.method == 'POST':
-#         # 复制 POST 数据（可修改）用于序列化校验
-#         data = request.POST.copy()
-
-#         # 用序列化器验证数据格式
-#         serializer = RegisterSerializer(data=data)
-
-#         if serializer.is_valid():
-#             name = serializer.validated_data['username']
-#             email = serializer.validated_data['email']
-
-#             # 用户名或邮箱重复校验
-#             if users.objects.filter(name=name).exists():
-#                 return render(request, 'signup.html', {
-#                     'errors': {'username': ['Username already exists']}
-#                 })
-#             if users.objects.filter(email=email).exists():
-#                 return render(request, 'signup.html', {
-#                     'errors': {'email': ['Email already exists']}
-#                 })
-
-#             # 获取标签字符串（由前端拼接的逗号分隔字符串）
-#             tags_str = serializer.validated_data.get('tags', '')
-#             tags_list = tags_str.split(',') if tags_str else []
-#             tags_final = ','.join(tags_list)  # 可直接存储到数据库
-
-#             # 创建用户并保存到数据库
-#             users.objects.create(
-#                 name=name,
-#                 email=email,
-#                 password=make_password(serializer.validated_data['password']),  # 加密密码
-#                 tags=tags_final
-#             )
-
-#             # 注册成功后跳转到登录页面
-#             return redirect('/login/')
-#         else:
-#             # 表单验证失败，重新渲染注册页并显示错误
-#             return render(request, 'signup.html', {'errors': serializer.errors})
-
-#     # GET 请求时渲染注册页面
-#     return render(request, 'signup.html')
-
-
-# # 登录视图
-# def login_view(request):
-#     if request.method == 'POST':
-#         serializer = LoginSerializer(data=request.POST)
-#         if serializer.is_valid():
-#             email = serializer.validated_data['email']
-#             password = serializer.validated_data['password']
-
-#             try:
-#                 user_obj = users.objects.get(email=email)
-#                 user = authenticate(request, username=user_obj.username, password=password)
-#             except  users.DoesNotExist:
-#                 user = None
-
-#             if user:
-#                 login(request, user)  # ✅ Django 正式登录
-#                 return redirect('index')
-#             else:
-#                 return render(request, 'login.html', {
-#                     'errors': {'email': ['Invalid email or password']}
-#                 })
-#         else:
-#             return render(request, 'login.html', {'errors': serializer.errors})
-#     return render(request, 'login.html')
 
 # 首页视图
 def index_view(request):
@@ -132,6 +70,7 @@ def register_view(request):
     return render(request, 'signup.html')
 
 # 登出视图
+
 def logout_view(request):
     request.session.flush()  # ✅ 清除所有 session 数据
     return redirect('public_index')
@@ -141,7 +80,37 @@ def profile_view(request):
     return render(request, 'profile.html')
 
 
+
+def public_index(request):
+    search_query = request.GET.get('q', '')       # 搜索关键词（可选）
+    selected_tags = request.GET.getlist('tags')   # 标签筛选（可选）
+
+    # 查询所有餐厅，并进行搜索过滤（如果有）
+    restaurant_qs = restaurants.objects.all()
+    if search_query:
+        restaurant_qs = restaurant_qs.filter(name__icontains=search_query)
+    if selected_tags:
+        restaurant_qs = restaurant_qs.filter(category__in=selected_tags)
+
+    # 热门推荐餐厅（评分前 20）
+    trending_restaurants = restaurant_qs.order_by('-score')[:20]
+
+    # 点赞数最高的一条评论
+    top_review = reviews.objects.select_related('user').order_by('-likes')[:3]
+
+
+    context = {
+        'trending': trending_restaurants,
+        'top_review': top_review,
+        'search_query': search_query,
+        'selected_tags': selected_tags,
+    }
+
+    return render(request, 'public_index.html', context)
+
+
 # 首页展示视图（Discover Page）
+
 def home_view(request):
     search_query = request.GET.get('q', '')  # 搜索关键词
     selected_tags = request.GET.getlist('tags')  # 搜索筛选标签
@@ -207,6 +176,32 @@ def home_view(request):
     return render(request, 'private_index.html', context)
 
 
+
+@csrf_exempt
+def toggle_like_view(request, review_id):
+    if request.method == 'POST':
+        try:
+            review = reviews.objects.get(pk=review_id)
+            liked = request.session.get(f'liked_{review_id}', False)
+
+            if liked:
+                review.likes = max(0, review.likes - 1)
+                request.session[f'liked_{review_id}'] = False
+                liked_now = False
+            else:
+                review.likes += 1
+                request.session[f'liked_{review_id}'] = True
+                liked_now = True
+
+            review.save()
+            return JsonResponse({'likes': review.likes, 'liked': liked_now})
+        except reviews.DoesNotExist:
+            return JsonResponse({'error': 'Review not found'}, status=404)
+
+
+
+
+
 def restaurant_detail_view(request, restaurant_id):
     # 获取餐厅对象
     restaurant = get_object_or_404(restaurants, restaurant_id=restaurant_id)
@@ -214,34 +209,35 @@ def restaurant_detail_view(request, restaurant_id):
     # 获取菜单菜品
     menu_dishes = menudishes.objects.filter(restaurant=restaurant)
 
-    # 获取该餐厅的所有评论（按点赞数排序）
-    review_list = reviews.objects.filter(restaurant=restaurant).order_by('-likes')
-
-    # 获取评论数量
+    # 获取评论（包含用户名）并按点赞排序
+    review_list = reviews.objects.filter(restaurant=restaurant).select_related('user').order_by('-likes')
     review_count = review_list.count()
 
-    # 获取菜品与食谱匹配字典
-    # matched_recipes = {
-    #     match.menudish.name: match.recipe
-    #     for match in Match.objects.filter(menudish__restaurant=restaurant)
-    # }
+    # 构造菜品与匹配食谱的组合列表
+    dish_with_recipe = []
+    for dish in menu_dishes:
+        matched = match.objects.filter(
+            restaurant_id=restaurant.restaurant_id,
+            menu_name=dish.menu_name
+        ).select_related('recipe').first()
 
-    # 预处理标签（用作前端标签展示）
+        dish_with_recipe.append({
+            'dish': dish,
+            'recipe': matched.recipe if matched else None
+        })
+
+    # 分割标签
     category_tags = restaurant.category.split(',') if restaurant.category else []
 
     context = {
         'restaurant': restaurant,
-        'menu_dishes': menu_dishes,
+        'dish_with_recipe': dish_with_recipe,
         'review': review_list,
         'review_count': review_count,
-        # 'matched_recipes': matched_recipes,
-        'category_tags': category_tags,  # 前端可循环渲染
+        'category_tags': category_tags,
     }
 
     return render(request, 'restaurant.html', context)
-
-def discovery_view(request):
-    return render(request, 'discovery.html')
 
 def recommendations_view(request):
     return render(request, 'recommendations.html')
@@ -251,10 +247,9 @@ def recommendations_view(request):
     # 社区页视图（Community Feed + Poll）
 def community_view(request):
     # 获取最新的 10 条评论作为社区动态
-#     latest_reviews = reviews.objects.select_related('user', 'restaurant').order_by('-date').values(
-#     'user__name', 'restaurant__name', 'text'
-# )[:10]
-    latest_reviews = reviews.objects.order_by('-date').values_list('text', flat=True)[:5]
+    latest_reviews = reviews.objects.select_related('user', 'restaurant').order_by('-date').values(
+    'user__name', 'restaurant__name', 'text')[:5]
+    # latest_reviews = reviews.objects.order_by('-date').values_list('text', flat=True)[:5]
 
 
 
@@ -287,6 +282,68 @@ def restaurant_map_view(request, restaurant_id):
     return render(request, 'restaurant_map.html', context)
 
 
+
+
+def restaurant_list_view(request):
+    queryset = restaurants.objects.annotate(review_count=Count('reviews'))
+
+    price_range = request.GET.get('price', '').strip()
+    category = request.GET.get('category', '').strip()
+    score_filter = request.GET.get('score', '').strip()
+    search_query = request.GET.get('q', '').strip()  # 🔍 新增搜索关键词
+
+    # ➤ 筛选价格
+    if price_range:
+        queryset = queryset.filter(price_range=price_range)
+
+    # ➤ 筛选分类
+    if category:
+        queryset = queryset.filter(category__icontains=category)
+
+    # ➤ 筛选评分
+    if score_filter:
+        try:
+            score = float(score_filter)
+            if score >= 4.5:
+                queryset = queryset.filter(score__gte=4.5)
+            elif score >= 4.0:
+                queryset = queryset.filter(score__gte=4.0, score__lt=4.5)
+            elif score >= 3.5:
+                queryset = queryset.filter(score__gte=3.5, score__lt=4.0)
+            elif score >= 3.0:
+                queryset = queryset.filter(score__gte=3.0, score__lt=3.5)
+            else:
+                queryset = queryset.filter(score__lt=3.0)
+        except ValueError:
+            pass
+
+
+    # ➤ 搜索关键词匹配（名称 / 地址 / 类别）
+    if search_query:
+        queryset = queryset.filter(
+            Q(name__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(category__icontains=search_query)
+        )
+
+    # ➤ 分页
+    paginator = Paginator(queryset, 8)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # ➤ 传入模板参数
+    context = {
+        'restaurants': page_obj.object_list,
+        'page_obj': page_obj,
+        'selected_price': price_range,
+        'selected_category': category,
+        'selected_score': score_filter,
+        'search_query': search_query,  # ✅ 回传搜索栏值
+    }
+
+    return render(request, 'discovery.html', context)
+
+
 def recipe_detail_view(request, recipe_id):
     # 获取当前 Recipe 对象
     recipe = get_object_or_404(recipes, recipe_id=recipe_id)
@@ -295,7 +352,7 @@ def recipe_detail_view(request, recipe_id):
     matched_recipes = recipes.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
 
     # 获取当前 Recipe 匹配到的所有 MenuDish（即：在哪些餐厅有类似的菜）
-    matched_menu_dishes = Match.objects.filter(recipe=recipe)
+    matched_menu_dishes = match.objects.filter(recipe=recipe)
 
     # 获取菜品所属餐厅信息
     similar_restaurants = [match.menudish.restaurant for match in matched_menu_dishes]
@@ -307,6 +364,7 @@ def recipe_detail_view(request, recipe_id):
     }
 
     return render(request, 'recipe_detail.html', context)
+
 
     
 

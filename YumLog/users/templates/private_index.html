@@ -115,6 +115,26 @@
                 <h3>{{ r.name }}</h3>
                 <p>{{ r.address }}</p>
                 <p>{{ r.score }} stars</p>
+                <a href="{% url 'restaurant_detail' r.restaurant_id %}" 
+   style="
+     margin-top: 8px;
+     display: inline-block;
+     font-size: 0.85rem;
+     font-weight: 600;
+     padding: 10px 20px;
+     border-radius: 30px;
+     background: rgba(255, 255, 255, 0.5); /* 半透明白色背景 */
+     color: #e47979;                        /* 与主色调一致 */
+     backdrop-filter: blur(5px);            /* 模糊背景 */
+     box-shadow: 0 4px 8px rgba(0,0,0,0.08); 
+     text-decoration: none;
+     transition: all 0.3s ease;
+   "
+   onmouseover="this.style.background='rgba(255,255,255,0.75)'"
+   onmouseout="this.style.background='rgba(255,255,255,0.5)'">
+   View Details →
+</a>
+
               </div>
             </div>
           {% endfor %}
@@ -137,14 +157,14 @@
     <h2 class="section-title">You May Like...</h2>
       <div class="liked-scroll-container">
         {% for r in recommended_restaurants %}
-        <a href="{% url 'restaurant_detail' restaurant_id=r.restaurant_id %}" style="text-decoration: none; color: inherit;">
+        <a href="{% url 'restaurant_detail' restaurant_id=r.restaurant_id %}"></a>
           <div class="card">
             <div class="card-body">
               <h3>{{ r.name }}</h3>
               <p>{{ r.address }} · {{ r.category }}</p>
             </div>
           </div>
-        </a>
+        
         {% endfor %}
       </div>
 

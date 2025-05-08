@@ -7,13 +7,16 @@ from .views import (
     restaurant_map_view,
     community_view,
     recipe_detail_view,  
-    index_view,
+    public_index,
     profile_view,
     logout_view, 
+    restaurant_list_view,
+    recipe_detail_view,
+    toggle_like_view,
 )
 
 urlpatterns = [
-    path('', index_view, name='public_index'), 
+    path('', public_index, name='public_index'), 
     path('register/', register_view, name='register'),  # 注册页面
     path('profile/', profile_view, name='profile'),  # 注册页面
     path('login/', login_view, name='login'),  # 登录页面
@@ -23,6 +26,13 @@ urlpatterns = [
     path('community/', community_view, name='community'),  # 社区页面（社区动态 + 投票）
     path('recipe/<int:recipe_id>/', recipe_detail_view, name='recipe_detail'),  # 食谱详情页
     path('public_index/', logout_view, name='logout'),  # 食谱详情页
+    path('discovery/', restaurant_list_view, name='discovery'),  # 🌟 餐厅筛选页面
+    path('recipe/<int:recipe_id>/', recipe_detail_view, name='recipe_detail'),
+    path('toggle_like/<int:review_id>/', toggle_like_view, name='toggle_like'),
+
+
+    
     
 ]
+
 

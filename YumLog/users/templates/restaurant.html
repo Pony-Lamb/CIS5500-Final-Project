@@ -72,6 +72,33 @@
       font-size: 0.9rem;
       color: #999;
     }
+
+    /* 点赞按钮样式 */
+    .like-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    /* 点赞后颜色变红 */
+    .like-btn.liked {
+      color: #e74c3c;
+    }
+
+    /* 点赞图标放大动画 */
+    .like-btn.animate {
+      animation: pop 0.3s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+
+
   </style>
 </head>
 <body>
@@ -127,35 +154,48 @@
     <!-- Menu -->
     <div class="menu-section">
       <h2>Menu</h2>
-      <div class="card">
-        <div class="card-body">
-          <span>Spicy Tonkotsu Ramen</span>
-          <span>$12.99</span>
+      {% for item in dish_with_recipe %}
+        <div class="card">
+          <div class="card-body" style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 500;">{{ item.dish.menu_name }}</span>
+            <span style="font-weight: 500;">${{ item.dish.price }}</span>
+          </div>
+
+          {% if item.recipe %}
+            <a href="{% url 'recipe_detail' item.recipe.recipe_id %}" style="margin-left: 1rem; color: #e47979; font-weight: 500;">
+              Match this dish to a home recipe →
+            </a>
+          {% else %}
+            <p style="color: #888; font-size: 0.9rem; margin-left: 1rem;">No matched recipe.</p>
+          {% endif %}
         </div>
-        <a href="recipe.html">Match this dish to a home recipe →</a>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <span>Vegetarian Miso Ramen</span>
-          <span>$11.49</span>
-        </div>
-      </div>
+      {% endfor %}
     </div>
+
+
 
     <div class="reviews-section">
       <h2>User Reviews</h2>
       {% for r in review %}
-        <div class="review-card" data-review-id="{{ r.review_id }}">
-          <h3>@{{ r.review_id }}</h3>
+        <div class="review-card">
+          <h3>@{{ r.user.name }}</h3>
           <p>{{ r.text }}</p>
           <div class="rating">
-            <span class="like-count">{{ r.likes }}</span> 👍
+            <span id="like-count-{{ r.review_id }}">{{ r.likes }}</span>
+            <button
+              id="like-btn-{{ r.review_id }}"
+              class="like-btn"
+              onclick="toggleLike('{{ r.review_id }}')"
+            >👍</button>
           </div>
         </div>
       {% empty %}
         <p>No reviews yet for this restaurant.</p>
       {% endfor %}
     </div>
+    
+    
+    
     
 
 
@@ -167,6 +207,57 @@
   </footer>
 
   <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    // 获取 CSRF Token 的函数（必须）
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // 判断 cookie 是否以 name= 开头
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  
+    // 点赞或取消点赞功能
+    function toggleLike(reviewId) {
+      fetch(`/users/toggle_like/${reviewId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        // 更新点赞数
+        document.getElementById(`like-count-${reviewId}`).innerText = data.likes;
+
+        // 获取按钮图标
+        const icon = document.getElementById(`like-icon-${reviewId}`);
+        const button = document.getElementById(`like-btn-${reviewId}`);
+
+        if (data.liked) {
+          icon.textContent = '❤️';       // 点赞后的图标
+          button.classList.add('liked'); // 可加颜色
+        } else {
+          icon.textContent = '👍';       // 取消点赞恢复默认
+          button.classList.remove('liked');
+        }
+      });
+    }
+
+  </script>
+  
+    
+    
+  
+  
   
 </body>
 </html>

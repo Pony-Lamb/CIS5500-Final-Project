@@ -7,6 +7,87 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Home</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+  <style>
+    .trending-scroll-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      gap: 20px;
+      width: 900px; /* 3 × 卡片宽度 */
+      margin: 0 auto;
+      padding-bottom: 0.5rem; /* 稍微减少留白 */
+    }
+
+    .card {
+      flex: 0 0 280px;
+
+      /* 柔和奶白 + 淡紫 + 淡粉渐变 */
+      background: linear-gradient(-45deg, #fefefe, #f6f0fa, #f0f4ff, #f8f4f1);
+      background-size: 400% 400%;
+      animation: gradientShift 5s ease infinite;
+
+      border-radius: 12px;
+      padding: 0.1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      color: #333;
+    }
+
+
+    .card .card-body {
+      padding: 0.25rem;
+    }
+
+    .card h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* 动态渐变背景动画 */
+    @keyframes gradientShift {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    .card:hover {
+      background: linear-gradient(-45deg, #e8e8e8, #ebdff1, #dde3f6, #eee5e1);
+      background-size: 400% 400%;
+      transform: translateY(-5px) scale(1.01);
+      transition: all 0.3s ease;
+      z-index: 5;
+    }
+    
+
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background-color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      border-radius: 50%;
+    }
+
+    .left-btn { left: -30px; }
+    .right-btn { right: -30px; }
+
+    /* 其余页面样式略，仍可由 style.css 控制 */
+  </style>
 </head>
 <body>
   <nav>
@@ -14,56 +95,69 @@
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
       <ul id="nav-guest">
         <li><a href="{% url 'public_index' %}" class="active">Home</a></li>
-        <!-- <li><a href="{% url 'discovery' %}">Discover</a></li>
-        <li><a href="{% url 'community' %}">Community</a></li>
-        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li> -->
         <li class="profile"><a href="{% url 'login' %}">Log In</a></li>
         <li><a class="btn" href="{% url 'signup' %}">Sign Up</a></li>
       </ul>
     </div>
   </nav>
 
-  <main class="container discover-page">
-    <h1>Discover Delicious</h1>
-    <div class="search-bar full-width">
-      <input type="text" placeholder="Search restaurants or dishes..." />
-    </div>
 
 
 
-    <h2 class="section-title">Trending Now</h2>
-    <div class="grid grid-3">
-      {% for restaurants in trending_restaurants %}
-        <div class="card"><div class="card-body">
-          <h3>{{ restaurants.name }}</h3>
-          <p>{{ restaurants.location }}</p>
-          <p>{{ restaurants.score }} ({{ restaurants.review_count }} reviews)</p>
-        </div></div>
-      {% endfor %}
-    </div>
+    <!-- 🔥 热门推荐 -->
+    <main class="container">
+      <h2 class="section-title">Trending Now</h2>
+      <div class="trending-container-wrapper" style="position: relative; width: 960px; margin: auto;">
+        <button onclick="scrollLeft()" class="scroll-btn left-btn">◀</button>
     
+        <div id="trending-container" class="trending-scroll-container" style="display: flex; overflow-x: auto; scroll-behavior: smooth;">
+          {% for r in trending %}
+            <a href="{% url 'restaurant_detail' r.restaurant_id %}" style="text-decoration: none; color: inherit;">
+              <div class="card" style="min-width: 280px; margin-right: 16px;">
+                <div class="card-body">
+                  <h3>{{ r.name }}</h3>
+                  <p>{{ r.address }}</p>
+                  <p>{{ r.score }} stars</p>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+    
+        <button onclick="scrollRight()" class="scroll-btn right-btn">▶</button>
+      </div>
 
+    <!-- 🌟 顶部评论 -->
     <h2 class="section-title">Top Reviews from Foodies</h2>
-    <div class="review-card">
-      <p>“Incredible sushi, cozy vibe!”</p>
-      <div class="rating">— @sushilover</div>
-    </div>
+    {% if top_review %}
+      {% for r in top_review %}
+        <div class="review-card" style="max-width: 960px; margin: 1rem auto; background: rgba(255,255,255,0.8); padding: 1rem 1.5rem; border-radius: 12px;">
+          <p>“{{ r.text }}”</p>
+          <div class="rating" style="text-align: right; font-style: italic; color: #555;">
+            — @{{ r.user.name }}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="text-align: center; color: #888;">No reviews available.</p>
+    {% endif %}
 
-    <h2 class="section-title">Because You Liked Ramen House...</h2>
-    <div class="grid grid-2">
-      <div class="card"><div class="card-body">
-        <h3>Udon Palace</h3><p>Nearby · Japanese · $$</p>
-      </div></div>
-      <div class="card"><div class="card-body">
-        <h3>Spicy Bowl</h3><p>Nearby · Ramen · Spicy</p>
-      </div></div>
-    </div>
+
   </main>
 
-  <footer>
+  <footer style="text-align: center; margin-top: 2rem; color: #666;">
     &copy; 2025 YumLog. All rights reserved.
   </footer>
+
   <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    function scrollLeft() {
+      document.getElementById("trending-container").scrollBy({ left: -300, behavior: 'smooth' });
+    }
+    function scrollRight() {
+      document.getElementById("trending-container").scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  </script>
 </body>
 </html>
 

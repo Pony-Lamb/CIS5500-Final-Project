@@ -7,182 +7,177 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Discover</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ==== Map‐View Layout ==== */
-    .map-view {
-      display: none;
-      margin-top: 1rem;
-      display: flex;
-      gap: 1rem;
+    body { font-family: 'Inter', sans-serif; background: #f7f7f9; }
+    .filters { display: flex; justify-content: center; flex-wrap: wrap; padding: 16px 0; gap: 12px; }
+    .filter-select {
+      appearance: none; font-family: 'Inter'; font-size: 15px; font-weight: 500; color: #222;
+      padding: 10px 20px; border: none; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
     }
-    .map-sidebar {
-      width: 300px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .filter-select:hover { background: rgba(255, 255, 255, 0.35); transform: translateY(-1px); cursor: pointer; }
+    .pagination a {
+      padding: 6px 12px; background: #f5f5f5; border-radius: 6px;
+      margin: 0 5px; text-decoration: none; color: #333;
+      transition: 0.3s;
     }
-    .map-sidebar h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+    .pagination a:hover { background: #ddd; }
+    .pagination input[type="number"] {
+      padding: 6px 10px; border: none; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(6px);
+      color: #222; width: 70px; text-align: center;
+      font-size: 15px; outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease;
     }
-    .nearby-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .nearby-list li {
-      margin-bottom: 1rem;
-    }
-    .map-container {
-      flex: 1;
-      background: #eaedf1;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #666;
-      font-size: 1.1rem;
-    }
-    .back-btn {
-      background: none;
-      border: none;
-      color: #3182ce;
-      cursor: pointer;
-      margin-top: 1rem;
-      padding: 0;
-      font-size: 0.9rem;
+    #nav-auth a.active {
+      border-bottom: 3px solid #e47979;
+      padding-bottom: 6px;
     }
   </style>
 </head>
-<body>
 
+<body>
   <nav>
     <div class="container">
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
       <ul id="nav-auth">
-        <li><a href="{% url 'private_index' %}" class="active">Home</a></li>
-        <li><a href="{% url 'discovery' %}">Discover</a></li>
-        <li><a href="{% url 'community' %}">Community</a></li>
-        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li>
-        <li><a href="{% url 'profile' %}">Profile</a></li>
+        <li><a href="{% url 'private_index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'discovery' %}" class="{% if request.path == '/discover/' %}active{% endif %}">Discover</a></li>
+        <li><a href="{% url 'community' %}" class="{% if request.path == '/community/' %}active{% endif %}">Community</a></li>
+        <li><a href="{% url 'recommendations' %}" class="{% if request.path == '/recommendations/' %}active{% endif %}">Smart Recs</a></li>
+        <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}">Profile</a></li>
         <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- MAIN -->
   <main class="container">
-
-    <!-- ─── LIST VIEWS ──────────────────────────────────── -->
     <section id="guest-list">
-      <!-- search + Map View -->
-      <div class="search-bar full-width">
-        <input type="text" placeholder="Search nearby restaurants…" />
-        <button class="btn" data-action="show-map">Map View</button>
-      </div>
-      <!-- tabs + filters (as before) -->
-      <div class="tabs">
-        <button class="btn tab-btn active">Filters</button>
-        <button class="btn tab-btn">Top Rated</button>
-      </div>
-      <div class="filters">
-        <button class="filter-btn">All Prices</button>
-        <button class="filter-btn">All Category</button>
-        <button class="filter-btn">All Cuisines</button>
-        <button class="filter-btn">All Tags</button>
-        <button class="filter-btn">Distance</button>
-      </div>
-      <!-- results sample -->
-      <div class="results">
-        <div class="card result-card">
-          <div class="card-body">
-            <h3>Spicy Ramen House</h3>
-            <p>Chinatown · $$ · Noodles</p>
-            <p class="subtext">Gluten-free · Vegan-friendly</p>
-            <div class="rating">4.6 (112 reviews)</div>
-          </div>
+      <!-- ✅ 表单修复：包含搜索栏和 filters -->
+      <form method="get" id="filter-form" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        
+        <div class="search-bar" style="display: flex; gap: 10px; width: 100%; max-width: 700px;">
+          <input
+            type="text"
+            name="q"
+            placeholder="Search nearby restaurants…"
+            value="{{ search_query }}"
+            style="flex: 1; padding: 12px 20px; font-size: 16px; border: 2px solid #ccc; border-radius: 30px; outline: none;"
+          />
+          <button
+            class="btn"
+            type="submit"
+            style="background-color: #e47979; color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; font-size: 16px; border: none; cursor: pointer;"
+          >
+            Search
+          </button>
         </div>
-      </div>
-    </section>
 
-    <section id="auth-list" style="display:none;">
-      <div class="search-bar full-width">
-        <input type="text" placeholder="Search nearby restaurants…" />
-        <button class="btn">Filters</button>
-        <button class="btn" data-action="show-map">Map View</button>
-      </div>
-      <div class="tabs">
-        <button class="btn tab-btn active">Recent</button>
-        <button class="btn tab-btn">Top Rated</button>
-        <button class="btn tab-btn">AI Suggested</button>
-      </div>
-      <p class="hint">Recommendations are based on your taste history</p>
-      <div class="results">
-        <div class="card result-card">
-          <div class="card-body">
-            <h3>Spicy Ramen House</h3>
-            <p>Chinatown · $$ · Noodles</p>
-            <p class="subtext">Gluten-free · Vegan-friendly</p>
-            <div class="rating">4.6 (112 reviews)</div>
-          </div>
+        <div class="filters">
+          <select class="filter-select" name="price" onchange="this.form.submit()">
+            <option value="">All Prices</option>
+            <option value="$" {% if selected_price == "$" %}selected{% endif %}>$</option>
+            <option value="$$" {% if selected_price == "$$" %}selected{% endif %}>$$</option>
+            <option value="$$$" {% if selected_price == "$$$" %}selected{% endif %}>$$$</option>
+          </select>
+
+          <select class="filter-select" name="category" onchange="this.form.submit()">
+            <option value="">All Category</option>
+            <option value="American" {% if selected_category == "American" %}selected{% endif %}>American</option>
+            <option value="Burgers" {% if selected_category == "Burgers" %}selected{% endif %}>Burgers</option>
+            <option value="Fast Food" {% if selected_category == "Fast Food" %}selected{% endif %}>Fast Food</option>
+            <option value="Mexican" {% if selected_category == "Mexican" %}selected{% endif %}>Mexican</option>
+            <option value="Asian" {% if selected_category == "Asian" %}selected{% endif %}>Asian</option>
+            <option value="Pizza" {% if selected_category == "Pizza" %}selected{% endif %}>Pizza</option>
+            <option value="Desserts" {% if selected_category == "Desserts" %}selected{% endif %}>Desserts</option>
+            <option value="Seafood" {% if selected_category == "Seafood" %}selected{% endif %}>Seafood</option>
+            <option value="Sushi" {% if selected_category == "Sushi" %}selected{% endif %}>Sushi</option>
+            <option value="Vegetarian Friendly" {% if selected_category == "Vegetarian Friendly" %}selected{% endif %}>Vegetarian Friendly</option>
+          </select>
+          
+
+          <select class="filter-select" name="score" onchange="this.form.submit()">
+            <option value="">All Ratings</option>
+            <option value="4.5" {% if selected_score == "4.5" %}selected{% endif %}>4.5+ stars</option>
+            <option value="4.0" {% if selected_score == "4.0" %}selected{% endif %}>4.0 – 4.4 stars</option>
+            <option value="3.5" {% if selected_score == "3.5" %}selected{% endif %}>3.5 – 3.9 stars</option>
+            <option value="3.0" {% if selected_score == "3.0" %}selected{% endif %}>3.0 – 3.4 stars</option>
+            <option value="0" {% if selected_score == "0" %}selected{% endif %}>Below 3.0</option>
+          </select>
+
         </div>
-      </div>
-    </section>
+      </form>
 
-    <!-- ─── MAP VIEWS ───────────────────────────────────── -->
-    <section id="guest-map" class="map-view">
-      <div class="map-sidebar">
-        <h2>Nearby Restaurants</h2>
-        <ul class="nearby-list">
-          <li>
-            <strong>Sushi Hayato</strong><br>
-            4.8 · Tokyo Town
-          </li>
-          <li>
-            <strong>Beef Bowl House</strong><br>
-            4.6 · Midtown LA
-          </li>
-          <li>
-            <strong>Noodle Nest</strong><br>
-            4.7 · SF Japantown
-          </li>
-        </ul>
-        <button class="back-btn" data-action="back-to-list">&lt; Back</button>
-      </div>
-      <div class="map-container">Map loading…</div>
-    </section>
+      <!-- ✅ 搜索结果 -->
+      <section class="results">
+        {% if restaurants %}
+          {% for r in restaurants %}
+            <a href="{% url 'restaurant_detail' r.restaurant_id %}" style="text-decoration: none; color: inherit;">
+              <div class="card result-card" style="cursor: pointer; transition: 0.2s ease; border-radius: 12px;">
+                <div class="card-body">
+                  <h3>{{ r.name }}</h3>
+                  <p>{{ r.address }} · {{ r.price_range }} · {{ r.category }}</p>
+                  <div class="rating">{{ r.score }} ({{ r.review_count }} reviews)</div>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        {% else %}
+          <p style="text-align: center; margin-top: 2rem;">No results found. Try adjusting your filters.</p>
+        {% endif %}
+      </section>
 
-    <section id="auth-map" class="map-view">
-      <div class="map-sidebar">
-        <h2>Nearby Restaurants</h2>
-        <ul class="nearby-list">
-          <li>
-            <strong>Sushi Hayato</strong><br>
-            4.8 · Tokyo Town
-          </li>
-          <li>
-            <strong>Beef Bowl House</strong><br>
-            4.6 · Midtown LA
-          </li>
-          <li>
-            <strong>Noodle Nest</strong><br>
-            4.7 · SF Japantown
-          </li>
-        </ul>
-        <button class="back-btn" data-action="back-to-list">&lt; Back</button>
-      </div>
-      <div class="map-container">Map loading…</div>
-    </section>
+    <!-- ✅ 分页 -->
+    {% with 'price='|add:selected_price|add:'&category='|add:selected_category|add:'&score='|add:selected_score|add:'&q='|add:search_query as querystring %}
+    {% if page_obj.has_other_pages %}
+      <div class="pagination" style="text-align: center; margin-top: 2rem;">
+        {% if page_obj.number > 1 %}
+          <a href="?{{ querystring }}&page=1">« First</a>
+        {% endif %}
+        {% if page_obj.has_previous %}
+          <a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">« Previous</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            {% if num == page_obj.number %}
+              <span style="margin: 0 6px; font-weight: bold;">{{ num }}</span>
+            {% else %}
+              <a href="?{{ querystring }}&page={{ num }}" style="margin: 0 6px;">{{ num }}</a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next »</a>
+        {% endif %}
+        {% if page_obj.number < page_obj.paginator.num_pages %}
+          <a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last »</a>
+        {% endif %}
 
+        <div style="margin-top: 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+        <form method="get" style="margin-top: 1rem;">
+          <input type="hidden" name="price" value="{{ selected_price }}">
+          <input type="hidden" name="category" value="{{ selected_category }}">
+          <input type="hidden" name="score" value="{{ selected_score }}">
+          <input type="hidden" name="q" value="{{ search_query }}">
+          Go to page:
+          <input type="number" name="page" min="1" max="{{ page_obj.paginator.num_pages }}" required>
+          <button type="submit">Go</button>
+        </form>
+      </div>
+    {% endif %}
+    {% endwith %}
+
+    </section>
   </main>
 
   <footer>
     &copy; 2025 YumLog. All rights reserved.
   </footer>
-
   <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
+

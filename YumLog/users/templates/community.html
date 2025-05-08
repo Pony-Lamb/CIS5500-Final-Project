@@ -18,13 +18,17 @@
       margin-bottom: 1.5rem;
     }
     .review-card {
-      background: var(--glass-bg);
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 1rem;
+      background: rgba(255, 255, 255, 0.4); /* 半透明白色背景 */
+      backdrop-filter: blur(10px);          /* 模糊背景 */
+      -webkit-backdrop-filter: blur(10px);  /* Safari 支持 */
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 1rem;
-      position: relative;
+      transition: box-shadow 0.2s ease;
     }
+
     .review-card h3 {
       margin: 0 0 0.5rem;
       font-size: 1rem;
@@ -86,16 +90,6 @@
       color: #333;
     }
 
-    .review-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 1rem;
-  }
 
   .review-text {
     flex: 1;
@@ -114,6 +108,45 @@
     color: #444;
   }
 
+  .review-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .review-text {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .review-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .review-username {
+    font-style: italic;
+  }
+
+    .fav-icon {
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s ease;
+  }
+
+  .fav-icon:hover {
+    transform: scale(1.2);
+  }
+
+  .fav-icon.liked {
+    color: #e74c3c;
+  }
+
+
+
+
   </style>
 </head>
 <body>
@@ -123,13 +156,14 @@
     <div class="container">
       <a class="logo"><img src="{% static 'images/logo.png' %}" alt="YumLog logo" /></a>
       <ul id="nav-auth">
-        <li><a href="{% url 'private_index' %}" class="active">Home</a></li>
-        <li><a href="{% url 'discovery' %}">Discover</a></li>
-        <li><a href="{% url 'community' %}">Community</a></li>
-        <li><a href="{% url 'recommendations' %}">Smart Recs</a></li>
-        <li><a href="{% url 'profile' %}">Profile</a></li>
+        <li><a href="{% url 'private_index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'discovery' %}" class="{% if request.path == '/discover/' %}active{% endif %}">Discover</a></li>
+        <li><a href="{% url 'community' %}" class="{% if request.path == '/community/' %}active{% endif %}">Community</a></li>
+        <li><a href="{% url 'recommendations' %}" class="{% if request.path == '/recommendations/' %}active{% endif %}">Smart Recs</a></li>
+        <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}">Profile</a></li>
         <li class="logout"><a href="{% url 'logout' %}" class="btn">Log Out</a></li>
       </ul>
+      
     </div>
   </nav>
 
@@ -138,19 +172,19 @@
 
     <h1>Community Feed</h1>
 
-  <!-- Review cards -->
-  {% for text in reviews %}
-  <div class="review-card">
-    <p class="review-text">{{ text }}</p>
-    <div class="icon-wrapper">
-      <span class="fav-icon">♡</span>
+    {% for review in reviews %}
+    <div class="review-card">
+      <div class="review-meta-bar">
+        <div class="spacer"></div>     
+        <span class="fav-icon" data-liked="false">♡</span>
+      </div>
+      <p class="review-text">“{{ review.text }}”</p>
     </div>
-  </div>
-  {% empty %}
-  <p>No reviews found.</p>
-  {% endfor %}
+    {% empty %}
+      <p>No reviews found.</p>
+    {% endfor %}
+  
 
-  </main>
 
 
     <!-- Community Poll -->
@@ -177,5 +211,19 @@
   </footer>
 
   <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const hearts = document.querySelectorAll('.fav-icon');
+      hearts.forEach(heart => {
+        heart.addEventListener('click', () => {
+          const liked = heart.getAttribute('data-liked') === 'true';
+          heart.setAttribute('data-liked', !liked);
+          heart.textContent = liked ? '♡' : '❤️';  // 切换字符
+          heart.classList.toggle('liked', !liked); // 切换样式（可选）
+        });
+      });
+    });
+  </script>
+  
 </body>
 </html>
