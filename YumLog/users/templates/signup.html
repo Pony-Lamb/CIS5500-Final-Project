@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,6 +100,28 @@
       color: #fff;
       border-color: #ed8936;
     }
+
+    /* Google signup button style */
+    .btn-google {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0.5rem 0;
+      background-color: #4285F4;
+      color: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-google:hover {
+      background-color: #357ae8;
+    }
   </style>
 </head>
 <body>
@@ -152,6 +175,12 @@
 
 
         <button type="submit" class="btn-primary">Sign Up</button>
+        <div style="text-align: center; margin-top: 1rem;">
+          <p style="margin-bottom: 0.5rem; color: #4a5568;">or</p>
+          <a href="{% provider_login_url 'google' %}" class="btn-google">
+            Continue with Google
+          </a>
+        </div>
       </form>
 
       <div class="auth-footer">
@@ -177,5 +206,3 @@
   </script>
 </body>
 </html>
-
-

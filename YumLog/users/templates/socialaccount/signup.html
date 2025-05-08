@@ -1,0 +1,107 @@
+{% load socialaccount %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <title>Complete Sign Up — YumLog</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .signup-card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    .signup-card h1 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .field-group {
+      margin-bottom: 1rem;
+    }
+    .field-group label {
+      display: block;
+      margin-bottom: .25rem;
+      font-weight: 500;
+    }
+    .field-group input[type="text"],
+    .field-group input[type="email"] {
+      width: 100%;
+      padding: .5rem;
+      border: 1px solid #ccd0d5;
+      border-radius: 4px;
+    }
+    .tags-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .5rem;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #4285F4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #357ae8;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-card">
+    <h1>Finish Your Sign Up</h1>
+    <form method="post" action="{% url 'socialaccount_signup' %}?process=signup">
+      {% csrf_token %}
+      <input type="hidden" name="process" value="signup">
+      <input type="hidden" name="next" value="{% url 'private_index' %}">
+
+      {% if form.email %}
+      <div class="field-group">
+        {{ form.email.label_tag }}
+        {{ form.email }}
+      </div>
+      {% endif %}
+
+      <div class="field-group">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+      </div>
+
+      <div class="field-group">
+        <label>Favorite cuisines</label>
+        <div class="tags-group">
+          {% for checkbox in form.tags %}
+            <label>
+              {{ checkbox.tag }} {{ checkbox.choice_label }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Sign Up</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -15,12 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from users.views import home_view, login_view, public_index, restaurant_list_view, community_view, smart_recs_view, register_view, index_view, recipe_detail_view
+from users.views import home_view, login_view, public_index, restaurant_list_view, community_view, smart_recs_view, register_view,  index_view, google_transfer_view, CustomSocialSignupView, recipe_detail_view
 from django.urls import path, include   
 
 urlpatterns = [
     path('', public_index, name='index'),
     path("admin/", admin.site.urls),
+
+    # Override the social-signup URL:
+    path(
+        'accounts/3rdparty/signup/',
+        CustomSocialSignupView.as_view(),
+        name='socialaccount_signup'
+    ),
+    # Then include the rest of the socialaccount URLs
+    path('accounts/', include('allauth.urls')),
+
+    path("transfer/", google_transfer_view, name="google_transfer"),
     path("users/", include('users.urls')),
     path("signup/", register_view, name='signup'),
     path("login/", login_view, name='login'), 

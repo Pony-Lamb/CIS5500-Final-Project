@@ -4,6 +4,8 @@ from .models import users, restaurants, menudishes, reviews, match, recipes
 from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import authenticate, login
 from django.db.models import Q
+from allauth.socialaccount.views import SignupView
+from django.urls import reverse
 from django.db import connection
 import re
 from django.core.paginator import Paginator
@@ -68,7 +70,10 @@ def register_view(request):
             name=username,
             email=email,
             password=make_password(password),
-            tags=tags_final  # ✅ 存入数据库
+            tags=tags_final,
+            profile='',
+            city='',
+            state=''
         )
         return redirect('login')
 
@@ -483,4 +488,35 @@ def clean_string(input):
 
 
 
+def google_transfer_view(request):
+    return render(request, 'signInTransfer.html')
 
+def form_invalid(self, form):
+    print("Form errors:", form.errors)
+    return super().form_invalid(form)
+
+
+import logging
+from allauth.socialaccount.views import SignupView
+from django.urls import reverse
+
+logger = logging.getLogger(__name__)
+
+class CustomSocialSignupView(SignupView):
+    def dispatch(self, request, *args, **kwargs):
+        logger.info(f"CustomSocialSignupView dispatch, path={request.path}")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        logger.info("Redirecting to private_index")
+        return reverse('private_index')
+
+    def form_invalid(self, form):
+        # Log validation errors when the form is invalid
+        logger.error(f"Signup form errors: {form.errors.as_json()}")
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        # Log a message when the form is successfully validated
+        logger.info("Signup form valid, proceeding to redirect")
+        return super().form_valid(form)

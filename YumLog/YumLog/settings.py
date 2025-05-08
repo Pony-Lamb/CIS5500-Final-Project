@@ -40,12 +40,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
-    "users",
+    'users.apps.UsersConfig',
+
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "allauth.account.middleware.AccountMiddleware",  # ✅ Add this line
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -90,11 +98,19 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'yumlog',
         'USER': 'cis5500',
+        'HOST': 'database-1.cfcenfnbcvhy.us-east-1.rds.amazonaws.com',  # RDS endpoint or EC2 IP
         'PASSWORD': 'kUWDP0g66ONQPkaiMKMo',
-        'HOST': 'database-1.cfcenfnbcvhy.us-east-1.rds.amazonaws.com',  # RDS 端点或 EC2 IP
         'PORT': '5432',
     }
 }
+
+SITE_ID = 1
+
+# Authentication backends: include Django default and Allauth
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 
 # Password validation
@@ -139,3 +155,31 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Allow social signup to reuse existing email addresses
+ACCOUNT_UNIQUE_EMAIL = False
+
+# Skip confirmation on GET so users hit the signup form
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Standard login/logout redirects
+LOGIN_REDIRECT_URL = '/private_index/'
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/private_index/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Explicit post‑signup redirect
+SOCIALACCOUNT_SIGNUP_REDIRECT_URL = '/private_index/'
+
+# Tell Allauth to use your custom adapter and form
+SOCIALACCOUNT_ADAPTER = 'users.adapter.MySocialAccountAdapter'
+SOCIALACCOUNT_FORMS = {
+    'signup': 'users.forms.CustomSocialSignupForm'
+}
+
+# Google OAuth scopes (including email)
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}

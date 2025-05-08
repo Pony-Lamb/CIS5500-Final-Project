@@ -8,6 +8,8 @@ class users(models.Model):
     profile = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
     email = models.TextField()
 
     def __str__(self):
