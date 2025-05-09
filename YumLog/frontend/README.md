@@ -2,4 +2,4 @@
 
 It is not in use for the final version.
 
-See the lastest version under YumLog/user folder.
+See the lastest version under "YumLog/user/template" folder.
