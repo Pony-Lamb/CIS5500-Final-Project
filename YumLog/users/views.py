@@ -465,6 +465,16 @@ def smart_recs_view(request):
                     FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
                         JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
                     LIMIT 10 OFFSET 10 * (" + page_number_str + " - 1);")
+        
+        # cur.execute("WITH pagination AS ( \
+        #                 SELECT m.menu_name, m.recipe_id, m.restaurant_id \
+        #                 FROM match m \
+        #                 LIMIT 10 OFFSET 10 * (%s - 1) \
+        #             ) \
+        #             SELECT r2.name AS restaurant, p.menu_name, r.title AS recipe, r.recipe_id, p.restaurant_id \
+        #             FROM pagination p JOIN recipes r on r.recipe_id = p.recipe_id \
+        #             JOIN public.restaurants r2 on p.restaurant_id = r2.restaurant_id;", [page_number_str])
+        
         rows = cur.fetchall()
 
         for row in rows:
