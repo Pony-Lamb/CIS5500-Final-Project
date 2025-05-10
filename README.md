@@ -25,6 +25,13 @@ making it easy to recreate restaurant meals at home.
 users to follow food influencers, participate in recipe replication discussions, and share 
 cooking experiences. 
 
+# Direction of run our app
+
+Under the directory `Yumlog/`, run:
+```
+python3 manage.py runserver
+```
+
 # Directory Description
 ● Milestones： Contains the files that need to be completed and submitted for each milestone.
 
