@@ -51,7 +51,10 @@ Data Preprocessing - Jiayang Chen
 
 RDS Setup and Data Upload - Yongqi Zhong  
 
-Query Writing - Yongyin Yang, Shutong Jiang  
+Query Writing - Yongyin Yang, Shutong Jiang
+
+# Required Packages
+You can find the required packages for this project in YumLog folder.
 
 Credentials:
 {
