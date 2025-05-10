@@ -18,9 +18,9 @@
       margin-bottom: 1.5rem;
     }
     .review-card {
-      background: rgba(255, 255, 255, 0.4); /* 半透明白色背景 */
-      backdrop-filter: blur(10px);          /* 模糊背景 */
-      -webkit-backdrop-filter: blur(10px);  /* Safari 支持 */
+      background: rgba(255, 255, 255, 0.4); /* translucence white backgroud */
+      backdrop-filter: blur(10px);          /* blur backgroud */
+      -webkit-backdrop-filter: blur(10px);  /* Safari support */
       padding: 1rem 1.5rem;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -227,8 +227,8 @@
         heart.addEventListener('click', () => {
           const liked = heart.getAttribute('data-liked') === 'true';
           heart.setAttribute('data-liked', !liked);
-          heart.textContent = liked ? '♡' : '❤️';  // 切换字符
-          heart.classList.toggle('liked', !liked); // 切换样式（可选）
+          heart.textContent = liked ? '♡' : '❤️';  // swith between icons
+          heart.classList.toggle('liked', !liked); // swith pattern
         });
       });
     });
@@ -237,12 +237,12 @@
     function togglePoll(btn) {
       const alreadySelected = btn.classList.contains("selected");
     
-      // 清除所有按钮的选中状态
+      // clear "selected" status for buttons
       document.querySelectorAll(".poll-option").forEach(option => {
         option.classList.remove("selected");
       });
     
-      // 如果不是取消当前选中，则标记当前为选中
+      // if it is not already selected, mark the button with "selected"
       if (!alreadySelected) {
         btn.classList.add("selected");
       }

@@ -73,7 +73,7 @@
       color: #999;
     }
 
-    /* 点赞按钮样式 */
+    /* like button */
     .like-btn {
       background: transparent;
       border: none;
@@ -82,12 +82,12 @@
       transition: color 0.3s ease;
     }
 
-    /* 点赞后颜色变红 */
+    /* red after liked */
     .like-btn.liked {
       color: #e74c3c;
     }
 
-    /* 点赞图标放大动画 */
+    /* magify like button */
     .like-btn.animate {
       animation: pop 0.3s ease;
     }
@@ -97,7 +97,7 @@
       50% { transform: scale(1.4); }
       100% { transform: scale(1); }
     }
-    /* 动态星星评分 */
+
     #star-rating {
       display: flex;
     }
@@ -114,12 +114,11 @@
       color: #f3ca43;
     }
     .menu-scroll-container {
-      max-height: 350px;         /* 设置最大高度 */
-      overflow-y: auto;          /* 启用垂直滚动条 */
-      padding-right: 10px;       /* 避免内容被滚动条遮住 */
+      max-height: 350px;
+      overflow-y: auto;          /* vertical scroll bar */
+      padding-right: 10px;       /* avoid overlapping with scroll bar */
     }
 
-    /* 滚动条美化（可选） */
     .menu-scroll-container::-webkit-scrollbar {
       width: 8px;
     }
@@ -232,12 +231,12 @@
       {% endfor %}
     </div>
 
-    <!-- 评论标题放外面 -->
+    <!-- comment title -->
     <h2>
       LEAVE A COMMENT
     </h2>
 
-<!-- 添加新评论（统一卡片风格 + 星星评分） -->
+<!-- add new comment -->
 <div class="review-card" style="margin-top: 2rem;">
   <form method="POST" action="{% url 'submit_review' restaurant_id=restaurant.restaurant_id %}">
     {% csrf_token %}
@@ -249,7 +248,7 @@
       required
     ></textarea>
 
-    <!-- 星级评分 -->
+    <!-- rating with star -->
     <div style="margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
       <span style="font-weight: bold;">Rating:</span>
       <div id="star-rating">
@@ -287,14 +286,14 @@
 
   <script src="{% static 'js/main.js' %}"></script>
   <script>
-    // 获取 CSRF Token 的函数（必须）
+    // get CSRF Token
     function getCookie(name) {
       let cookieValue = null;
       if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
           const cookie = cookies[i].trim();
-          // 判断 cookie 是否以 name= 开头
+          // check whether cookie starts with name=
           if (cookie.substring(0, name.length + 1) === (name + '=')) {
             cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
             break;
@@ -304,7 +303,7 @@
       return cookieValue;
     }
   
-    // 点赞或取消点赞功能
+    // like or dis-like
     function toggleLike(reviewId) {
       fetch(`/users/toggle_like/${reviewId}/`, {
         method: 'POST',
@@ -314,18 +313,18 @@
       })
       .then(response => response.json())
       .then(data => {
-        // 更新点赞数
+        // update likes
         document.getElementById(`like-count-${reviewId}`).innerText = data.likes;
 
-        // 获取按钮图标
+        // get like icon
         const icon = document.getElementById(`like-icon-${reviewId}`);
         const button = document.getElementById(`like-btn-${reviewId}`);
 
         if (data.liked) {
-          icon.textContent = '❤️';       // 点赞后的图标
-          button.classList.add('liked'); // 可加颜色
+          icon.textContent = '❤️';       // icon after liked
+          button.classList.add('liked');
         } else {
-          icon.textContent = '👍';       // 取消点赞恢复默认
+          icon.textContent = '👍';       // dis-like
           button.classList.remove('liked');
         }
       });

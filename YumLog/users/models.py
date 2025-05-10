@@ -45,10 +45,10 @@ class reviews(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.name} - {self.restaurant.name}"  # ✅ 修改了这里
+        return f"{self.user.name} - {self.restaurant.name}"
 
     class Meta:
-        db_table = 'reviews'   # ✅ 改成你数据库真实的表名
+        db_table = 'reviews'   # ✅ link to the table in database
        
         
 
@@ -61,8 +61,8 @@ class menudishes(models.Model):
     popularity_score = models.FloatField(default=0.0)
 
     class Meta:
-        db_table = 'menudishes'              # ✅ 使用数据库真实表名
-        managed = False                      # ✅ 禁止 Django 管理表结构
+        db_table = 'menudishes'
+        managed = False
         unique_together = (('restaurant', 'menu_name'),)
 
 
@@ -78,7 +78,7 @@ class recipes(models.Model):
         return self.title
 
     class Meta:
-        db_table = 'recipes'   # ✅ 显式指定真实的数据库表名
+        db_table = 'recipes'
         managed = False        
 
 

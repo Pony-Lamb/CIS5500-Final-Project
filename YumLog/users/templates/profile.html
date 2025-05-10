@@ -7,7 +7,6 @@
   <title>YumLog — Profile</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <style>
-    /* === 标签样式美化 === */
     .tag {
       display: inline-block;
       background: #f4f4f4;
@@ -133,7 +132,7 @@
       </div>
 
       <div class="profile-tags">
-        <!-- 当前标签展示 -->
+        <!-- current tags -->
         <div id="tags-display">
           {% for tag in tags %}
             <div class="tag">#{{ tag }}</div>
@@ -141,7 +140,7 @@
           <span class="edit-icon" onclick="showEdit()">✎</span>
         </div>
 
-        <!-- 标签编辑表单 -->
+        <!-- edit tags -->
         <form id="tags-form" method="POST" action="{% url 'update_tags' %}" class="tag-edit-form" style="display: none;">
           {% csrf_token %}
           <div class="tag-checkboxes">
@@ -166,7 +165,7 @@
             <h3>{{ review.restaurant }}</h3>
             <p style="margin: 0.5rem 0;">{{ review.text }}</p>
     
-            <!-- 星级和时间 -->
+            <!-- stars and time -->
             <div style="font-size: 0.9rem; color: #555;">
               {% for i in "12345" %}
                 {% if forloop.counter <= review.stars %}
@@ -178,7 +177,7 @@
               · {{ review.date|date:"Y-m-d H:i" }}
             </div>
     
-            <!-- 点赞 + 删除（统一右下角） -->
+            <!-- like and delete -->
             <div style="position: absolute; right: 1rem; bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
               <div style="font-size: 0.9rem; color: #999;">
                 {{ review.likes }} 👍

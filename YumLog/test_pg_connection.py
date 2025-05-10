@@ -8,20 +8,18 @@ try:
         user="cis5500",
         password="kUWDP0g66ONQPkaiMKMo"
     )
-    print("✅ 连接成功！")
+    print("✅ connected！")
 
-    # 🔸 先获取游标，再执行 SQL
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM restaurants")
     row = cur.fetchone()
-    print(f"数量：{row[0]}")
+    print(f"count: {row[0]}")
 
     # for row in rows:
     #     print(row)
 
-    # 关闭游标和连接
     cur.close()
     conn.close()
 
 except Exception as e:
-    print("❌ 连接失败：", e)
+    print("❌ connection failed: ", e)

@@ -17,7 +17,7 @@ def create_custom_user(sender, request, user, **kwargs):
         defaults={
             'name': email_prefix,
             'password': make_password(None),
-            'tags': '',           # ✅ 不再随机分配标签，设置为空
+            'tags': '',
             'profile': '',
             'city': 'Penn',
             'state': 'PA',

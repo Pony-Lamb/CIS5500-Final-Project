@@ -21,20 +21,20 @@ class RegisterSerializer(serializers.Serializer):
 
 
     def validate_username(self, value):
-        # 限制长度 3-20，只允许字母或数字
+        # length between 3-20, only number and character
         if not re.fullmatch(r'[a-zA-Z0-9]{3,20}', value):
             raise serializers.ValidationError("Username must be 3-20 characters long and contain only letters and numbers.")
         return value
 
     def validate_email(self, value):
-        # 限制只能使用特定后缀的邮箱（可选）
+        # email with specific domains
         allowed_domains = ['com', 'edu', 'org', 'net']
         if not any(value.endswith(f".{d}") for d in allowed_domains):
             raise serializers.ValidationError("Email must end with .com, .edu, .org, or .net")
         return value
 
     def validate_password(self, value):
-        # 至少6位，必须包含字母或数字
+        # at least 6, with both numbers and characters
         if len(value) < 6 or not re.search(r'[a-zA-Z]', value) or not re.search(r'[0-9]', value):
             raise serializers.ValidationError("Password must be at least 6 characters and include both letters and numbers.")
         return value

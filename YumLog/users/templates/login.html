@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>YumLog — Login</title>
 
-  <!-- ✅ 改动: 使用 Django 的静态文件路径 -->
+  <!-- ✅ use static file path of Django -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
   <style>
@@ -119,12 +119,12 @@
   <div class="auth-container">
     <div class="auth-card">
 
-      <!-- ✅ 改动: 使用 Django URL 反向解析 -->
+      <!-- ✅ use Django URL reverse -->
       <a href="{% url 'public_index' %}" class="auth-back">‹ Back</a>
 
       <h1>Login to YumLog</h1>
 
-      <!-- ✅ 改动: 添加 method, action, csrf -->
+      <!-- ✅ add method, action, csrf -->
       <form method="post" action="{% url 'login' %}" id="login-form">
         {% csrf_token %}
         <div class="form-group">
@@ -157,7 +157,7 @@
     </div>
   </div>
 
-  <!-- ✅ 改动: 删除 JS 拦截登录行为 -->
+  <!-- ✅ delete JS forbbiden -->
   <!-- <script>
     document.getElementById('login-form')
       .addEventListener('submit', function(e) {

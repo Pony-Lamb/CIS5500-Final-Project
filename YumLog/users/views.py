@@ -37,7 +37,7 @@ def login_view(request):
         try:
             user = users.objects.get(email=email)
             if password == user.password or check_password(password, user.password):
-                # ✅ 手动设置 session 标记用户为已登录
+                # ✅ set session to mark the user as logged in
                 request.session['user_email'] = user.email
                 request.session['is_logged_in'] = True
                 request.session['username'] = user.name
@@ -55,16 +55,15 @@ def register_view(request):
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        tags_str = request.POST.get('tags', '')  # ✅ 从前端表单获取 tags 字符串（可选）
+        tags_str = request.POST.get('tags', '')  # get tags from frontend
 
         if users.objects.filter(name=username).exists():
             return render(request, 'signup.html', {'errors': {'username': ['Username already exists']}})
         if users.objects.filter(email=email).exists():
             return render(request, 'signup.html', {'errors': {'email': ['Email already exists']}})
 
-        # 处理 tags 字符串（如有逗号分隔）
         tags_list = tags_str.split(',') if tags_str else []
-        tags_final = ','.join([tag.strip() for tag in tags_list])  # ✅ 去除多余空格再拼接
+        tags_final = ','.join([tag.strip() for tag in tags_list])  # remove spaces
 
         num = users.objects.count()
         id = 'u' + str(num)
@@ -82,10 +81,10 @@ def register_view(request):
 
     return render(request, 'signup.html')
 
-# 登出视图
+# log out
 
 def logout_view(request):
-    request.session.flush()  # ✅ 清除所有 session 数据
+    request.session.flush()  # clean all session values
     return redirect('index')
 
 ALL_TAGS = [
@@ -103,7 +102,7 @@ def profile_view(request):
     try:
         cur = connection.cursor()
 
-        # 获取用户名和当前标签
+        # get username and tags
         cur.execute("SELECT u.name, u.tags FROM users u WHERE u.email = %s;", [email])
         row = cur.fetchone()
 
@@ -116,7 +115,7 @@ def profile_view(request):
             tags = ["American"]
             print(f"[DEBUG] No user found for {email}. Using default values.")
 
-        # ✅ 获取用户的评论
+        # ✅ get comments
         cur.execute("""
             SELECT r.review_id, r.text, r.likes, r.stars, r.date, rest.name 
             FROM users u 
@@ -169,7 +168,7 @@ def update_tags_view(request):
         try:
             cur = connection.cursor()
             cur.execute("UPDATE users SET tags = %s WHERE email = %s;", [tags_str, email])
-            connection.commit()  # ✅ 添加这一行
+            connection.commit()
             cur.close()
             print(f"[SUCCESS] Updated tags to {tags_str} for {email}")
         except Exception as e:
@@ -190,14 +189,14 @@ def submit_review(request, restaurant_id):
             user = users.objects.get(email=email)
             restaurant = restaurants.objects.get(restaurant_id=restaurant_id)
 
-            # ❗手动生成唯一 review_id（不要用于高并发生产环境）
+            # manually generate unique review_id
             cur = connection.cursor()
             cur.execute("SELECT MAX(review_id) FROM reviews;")
             max_id = cur.fetchone()[0] or 0
             next_id = max_id + 1
             cur.close()
 
-            # 插入评论（显式指定 review_id）
+            # insert review
             reviews.objects.create(
                 review_id=next_id,
                 user=user,
@@ -209,7 +208,7 @@ def submit_review(request, restaurant_id):
             )
 
         except Exception as e:
-            print("插入评论失败：", e)
+            print("inserting review failed: ", e)
 
     return redirect('restaurant_detail', restaurant_id=restaurant_id)
 
@@ -228,7 +227,7 @@ def delete_review(request, review_id):
             if review.user.user_id == user.user_id:
                 review.delete()
         except Exception as e:
-            print("删除失败：", e)
+            print("deletion failed: ", e)
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -296,20 +295,20 @@ def delete_review(request, review_id):
 
 
 def public_index(request):
-    search_query = request.GET.get('q', '')       # 搜索关键词（可选）
-    selected_tags = request.GET.getlist('tags')   # 标签筛选（可选）
+    search_query = request.GET.get('q', '')       # key words of searching
+    selected_tags = request.GET.getlist('tags')   # tags
 
-    # 查询所有餐厅，并进行搜索过滤（如果有）
+    # search all restaurants and apply filters
     restaurant_qs = restaurants.objects.all()
     if search_query:
         restaurant_qs = restaurant_qs.filter(name__icontains=search_query)
     if selected_tags:
         restaurant_qs = restaurant_qs.filter(category__in=selected_tags)
 
-    # 热门推荐餐厅（评分前 20）
+    # trending restaurants
     trending_restaurants = restaurant_qs.order_by('-score')[:20]
 
-    # 点赞数最高的一条评论
+    # top review with the most likes
     top_review = reviews.objects.select_related('user').order_by('-likes')[:3]
 
 
@@ -323,11 +322,10 @@ def public_index(request):
     return render(request, 'public_index.html', context)
 
 
-# 首页展示视图（Discover Page）
 
 def home_view(request):
-    search_query = request.GET.get('q', '')  # 搜索关键词
-    selected_tags = request.GET.getlist('tags')  # 搜索筛选标签
+    search_query = request.GET.get('q', '')
+    selected_tags = request.GET.getlist('tags')
 
     restaurant = restaurants.objects.all()
 
@@ -337,42 +335,38 @@ def home_view(request):
     if selected_tags:
         restaurant = restaurant.filter(category__in=selected_tags)
 
-    # 热门推荐：评分最高前 3 个
     trending_restaurants = restaurants.objects.order_by('-score')[:20]
 
-    # # 精选评论：点赞数最多
     top_review = reviews.objects.order_by('-likes').first()
-
-    # 个性化推荐逻辑：根据用户 tags 推荐匹配类别的餐厅
     
     recommended_restaurants = []
-    print("🚀 已进入 dashboard 视图")
+    print("🚀 dashboard")
 
     if request.session.get('is_logged_in'):
         try:
             email = request.session.get('user_email')
             user = users.objects.get(email=email)
-            print("✅ 找到当前用户:", user.name)
+            print("✅ find current user:", user.name)
 
             if user.tags:
-                print("✅ 用户 tags 原始字符串:", user.tags)
+                print("✅ tags string: ", user.tags)
 
                 tag_list = [tag.strip().lower() for tag in user.tags.split(',') if tag.strip()]
-                print("✅ 清洗后的标签列表:", tag_list)
+                print("✅ tags list: ", tag_list)
 
-                # 构造 Q 查询：模糊匹配任意标签
+                # Q search
                 query = Q()
                 for tag in tag_list:
-                    print(f"🔍 匹配标签: {tag}")
+                    print(f"🔍 matched tags: {tag}")
                     query |= Q(category__icontains=tag)
 
                 matched = restaurants.objects.filter(query).distinct()
-                print(f"✅ 匹配到 {matched.count()} 条推荐")
+                print(f"✅ matched with {matched.count()} recommendations")
 
                 recommended_restaurants = matched[:5]
 
         except users.DoesNotExist:
-            print("❌ 用户不存在")
+            print("❌ user does not exist")
 
 
 
@@ -417,17 +411,14 @@ def toggle_like_view(request, review_id):
 
 
 def restaurant_detail_view(request, restaurant_id):
-    # 获取餐厅对象
     restaurant = get_object_or_404(restaurants, restaurant_id=restaurant_id)
 
-    # 获取菜单菜品
     menu_dishes = menudishes.objects.filter(restaurant=restaurant)
 
-    # 获取评论（包含用户名）并按点赞排序
+    # get reviews and ordered by likes
     review_list = reviews.objects.filter(restaurant=restaurant).select_related('user').order_by('-likes')
     review_count = review_list.count()
 
-    # 构造菜品与匹配食谱的组合列表
     dish_with_recipe = []
     for dish in menu_dishes:
         matched = match.objects.filter(
@@ -440,7 +431,6 @@ def restaurant_detail_view(request, restaurant_id):
             'recipe': matched.recipe if matched else None
         })
 
-    # 分割标签
     category_tags = restaurant.category.split(',') if restaurant.category else []
 
     context = {
@@ -461,19 +451,19 @@ def smart_recs_view(request):
     pre_page, next_page = page_number, page_number
     try:
         cur = connection.cursor()
-        cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id, m.restaurant_id \
-                    FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
-                        JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
-                    LIMIT 10 OFFSET 10 * (" + page_number_str + " - 1);")
+        # cur.execute("SELECT r2.name, m.menu_name, r.title, r.recipe_id, m.restaurant_id \
+        #             FROM match m JOIN recipes r on r.recipe_id = m.recipe_id \
+        #                 JOIN public.restaurants r2 on m.restaurant_id = r2.restaurant_id \
+        #             LIMIT 10 OFFSET 10 * (" + page_number_str + " - 1);")
         
-        # cur.execute("WITH pagination AS ( \
-        #                 SELECT m.menu_name, m.recipe_id, m.restaurant_id \
-        #                 FROM match m \
-        #                 LIMIT 10 OFFSET 10 * (%s - 1) \
-        #             ) \
-        #             SELECT r2.name AS restaurant, p.menu_name, r.title AS recipe, r.recipe_id, p.restaurant_id \
-        #             FROM pagination p JOIN recipes r on r.recipe_id = p.recipe_id \
-        #             JOIN public.restaurants r2 on p.restaurant_id = r2.restaurant_id;", [page_number_str])
+        cur.execute("WITH pagination AS ( \
+                        SELECT m.menu_name, m.recipe_id, m.restaurant_id \
+                        FROM match m \
+                        LIMIT 10 OFFSET 10 * (%s - 1) \
+                    ) \
+                    SELECT r2.name AS restaurant, p.menu_name, r.title AS recipe, r.recipe_id, p.restaurant_id \
+                    FROM pagination p JOIN recipes r on r.recipe_id = p.recipe_id \
+                    JOIN public.restaurants r2 on p.restaurant_id = r2.restaurant_id;", [page_number_str])
         
         rows = cur.fetchall()
 
@@ -511,20 +501,19 @@ def smart_recs_view(request):
 
 
 
-    # 社区页视图（Community Feed + Poll）
 def community_view(request):
-    # 获取最新的 10 条评论作为社区动态
+    # latest 10 reviews
     latest_reviews = reviews.objects.select_related('user', 'restaurant').order_by('-date').values(
     'user__name', 'restaurant__name', 'text')[:5]
     # latest_reviews = reviews.objects.order_by('-date').values_list('text', flat=True)[:5]
 
 
 
-    # 模拟投票选项（可改为数据库模型）
+    # simulate poll
     poll_question = "What's the best sushi spot in NYC?"
     poll_options = ["Sushi Nakazawa", "Sushi Yasuda", "Sugarfish"]
 
-    # 话题标签（可改为动态）
+    # topics
     explore_topics = ["Ramen Spots", "Cheap Eats", "Top Rated"]
 
     context = {
@@ -535,7 +524,7 @@ def community_view(request):
     }
     return render(request, 'community.html', context)
 
-# 获取餐厅信息
+
 def restaurant_map_view(request, restaurant_id):
 
     restaurant = get_object_or_404(Restaurant, restaurant_id=restaurant_id)
@@ -557,17 +546,17 @@ def restaurant_list_view(request):
     price_range = request.GET.get('price', '').strip()
     category = request.GET.get('category', '').strip()
     score_filter = request.GET.get('score', '').strip()
-    search_query = request.GET.get('q', '').strip()  # 🔍 新增搜索关键词
+    search_query = request.GET.get('q', '').strip()
 
-    # ➤ 筛选价格
+    # price filter
     if price_range:
         queryset = queryset.filter(price_range=price_range)
 
-    # ➤ 筛选分类
+    # category filter
     if category:
         queryset = queryset.filter(category__icontains=category)
 
-    # ➤ 筛选评分
+    # score filter
     if score_filter:
         try:
             score = float(score_filter)
@@ -585,7 +574,7 @@ def restaurant_list_view(request):
             pass
 
 
-    # ➤ 搜索关键词匹配（名称 / 地址 / 类别）
+    # key word search
     if search_query:
         queryset = queryset.filter(
             Q(name__icontains=search_query) |
@@ -593,44 +582,24 @@ def restaurant_list_view(request):
             Q(category__icontains=search_query)
         )
 
-    # ➤ 分页
+    # pagination
     paginator = Paginator(queryset, 8)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # ➤ 传入模板参数
     context = {
         'restaurants': page_obj.object_list,
         'page_obj': page_obj,
         'selected_price': price_range,
         'selected_category': category,
         'selected_score': score_filter,
-        'search_query': search_query,  # ✅ 回传搜索栏值
+        'search_query': search_query,  # ✅ search input
     }
 
     return render(request, 'discovery.html', context)
 
 
 def recipe_detail_view(request):
-    # # 获取当前 Recipe 对象
-    # recipe = get_object_or_404(recipes, recipe_id=recipe_id)
-
-    # # 获取其它推荐 Recipe（Matched Recipes）
-    # matched_recipes = recipes.objects.exclude(recipe_id=recipe_id)[:3]  # 简单逻辑：展示除本身以外的前 3 条，可替换为 NLP 结果
-
-    # # 获取当前 Recipe 匹配到的所有 MenuDish（即：在哪些餐厅有类似的菜）
-    # matched_menu_dishes = match.objects.filter(recipe=recipe)
-
-    # # 获取菜品所属餐厅信息
-    # similar_restaurants = [match.menudish.restaurant for match in matched_menu_dishes]
-
-    # context = {
-    #     'recipe': recipe,                         # 当前菜谱对象
-    #     'matched_recipes': matched_recipes,       # 相关推荐菜谱
-    #     'similar_restaurants': similar_restaurants  # 相似餐厅（从匹配菜品中提取）
-    # }
-
-    # return render(request, 'recipe_detail.html', context)
     recipe_id = request.GET.get('recipe_id')
     try:
         cur = connection.cursor()
@@ -685,30 +654,28 @@ logger = logging.getLogger(__name__)
 
 
 def google_transfer_view(request):
-    # 获取 Google 登录后的用户邮箱
+    # Google email
     email = request.user.email
 
-    # ✅ 若数据库中没有该用户，就创建一条记录（用于配合自定义 users 表）
+    # ✅ create a user
     if not users.objects.filter(email=email).exists():
-        uid = f'u{users.objects.count() + 1:03}'  # 生成唯一 user_id
+        uid = f'u{users.objects.count() + 1:03}'  # unique user_id
         users.objects.create(
             user_id=uid,
             email=email,
-            name='',            # ✅ 初始为空
-            password='',        # ✅ Google 登录不需要密码
-            tags='',            # ✅ 不默认 American，让用户自己选
+            name='',
+            password='',
+            tags='',
             profile='',
             city='',
             state=''
         )
         print(f"[INFO] Created users entry for Google user: {email}")
 
-    # ✅ 登录状态写入 session
     request.session['is_logged_in'] = True
     request.session['user_email'] = email
 
-    return redirect('profile')  # 跳转到 profile 页面让用户补充 tags 和 name
-
+    return redirect('profile')
 
 class CustomSocialSignupView(SignupView):
     def dispatch(self, request, *args, **kwargs):

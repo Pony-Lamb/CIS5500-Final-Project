@@ -57,7 +57,7 @@
 
   <main class="container">
     <section id="guest-list">
-      <!-- ✅ 表单修复：包含搜索栏和 filters -->
+      <!-- ✅ search bar and filters -->
       <form method="get" id="filter-form" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
         
         <div class="search-bar" style="display: flex; gap: 10px; width: 100%; max-width: 700px;">
@@ -112,7 +112,7 @@
         </div>
       </form>
 
-      <!-- ✅ 搜索结果 -->
+      <!-- ✅ search results -->
       <section class="results">
         {% if restaurants %}
           {% for r in restaurants %}
@@ -131,7 +131,7 @@
         {% endif %}
       </section>
 
-    <!-- ✅ 分页 -->
+    <!-- ✅ pagination -->
     {% with 'price='|add:selected_price|add:'&category='|add:selected_category|add:'&score='|add:selected_score|add:'&q='|add:search_query as querystring %}
     {% if page_obj.has_other_pages %}
       <div class="pagination" style="text-align: center; margin-top: 2rem;">

@@ -1,4 +1,4 @@
-{# dashboard.html - 登录后首页 #}
+{# dashboard.html - index after login #}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -14,15 +14,14 @@
       overflow-x: auto;
       scroll-behavior: smooth;
       gap: 20px;
-      width: 900px; /* 3 × 卡片宽度 */
+      width: 900px; /* 3 × width of card */
       margin: 0 auto;
-      padding-bottom: 0.5rem; /* 稍微减少留白 */
+      padding-bottom: 0.5rem; /* reduce margin slightly */
     }
 
     .card {
       flex: 0 0 280px;
 
-      /* 柔和奶白 + 淡紫 + 淡粉渐变 */
       background: linear-gradient(-45deg, #fefefe, #f6f0fa, #f0f4ff, #f8f4f1);
       background-size: 400% 400%;
       animation: gradientShift 5s ease infinite;
@@ -48,7 +47,7 @@
       margin-bottom: 0.5rem;
     }
 
-    /* 动态渐变背景动画 */
+    /* dynamic gradient ramp */
     @keyframes gradientShift {
       0% {
         background-position: 0% 50%;
@@ -86,7 +85,7 @@
     .left-btn { left: -30px; }
     .right-btn { right: -30px; }
 
-    /* 其余页面样式略，仍可由 style.css 控制 */
+    /* other style controlled by style.css */
   </style>
 </head>
 <body>
@@ -176,7 +175,6 @@
     &copy; 2025 YumLog. All rights reserved.
   </footer>
 
-  <!-- 页面底部脚本 -->
   <script>
     function scrollLeft() {
       const container = document.getElementById('trending-container');
